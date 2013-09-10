@@ -14,7 +14,7 @@ class Kudo < ActiveRecord::Base
   
   scope :with_pseud, where("pseud_id IS NOT NULL")
   scope :by_guest, where("pseud_id IS NULL")
-
+  
   # return either the name of the kudo-leaver or "guest"
   def name
     if self.pseud
