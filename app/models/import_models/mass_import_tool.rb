@@ -20,8 +20,8 @@ class MassImportTool
     @temp_table_prefix = "testing"
     @apply_temp_prefix = 1
 
-    #NOTE! change to nil for final version, as there will be no default
-    @connection = Mysql2.new(@database_host, @database_username, @database_password, @database_name)
+    #TODO NOTE! change to nil for final version, as there will be no default
+    @connection = Mysql2::Client.new(:host => @database_host,:username => @database_username,:password => @database_password,:database => @database_name)
     #####################################################
 
     #Archivist Settings
