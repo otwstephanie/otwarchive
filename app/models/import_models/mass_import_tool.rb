@@ -1350,7 +1350,7 @@ class MassImportTool
         chapter_content = read_file_to_string("#{@import_files_path}/stories/#{r3[0]}/#{f}")
         #chapter_content = Nokogiri::HTML.parse(chapter_content, nil, encoding) rescue ""
         #chapter_content = simple_format(chapter_content)
-        chapter_content = Mysql2.escape_string(chapter_content)
+        chapter_content = @connection.escape(chapter_content)
         #ic = Iconv.new('UTF-8//IGNORE', 'UTF-8')
         # chapter_content = ic.iconv(chapter_content + ' ')[0..-2]
         ## update the source chapter record
