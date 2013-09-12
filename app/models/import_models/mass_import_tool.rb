@@ -21,7 +21,7 @@ class MassImportTool
     @apply_temp_prefix = 1
 
     #NOTE! change to nil for final version, as there will be no default
-    @connection = Mysql.new(@database_host, @database_username, @database_password, @database_name)
+    @connection = Mysql2.new(@database_host, @database_username, @database_password, @database_name)
     #####################################################
 
     #Archivist Settings
@@ -1170,7 +1170,7 @@ class MassImportTool
   # @return [string or integer] if no result found returns 0
   def get_single_value_target(query)
     begin
-      connection = Mysql.new(@database_host, @database_username, @database_password, @database_name)
+      connection = Mysql2.new(@database_host, @database_username, @database_password, @database_name)
       r = connection.query(query)
       if r.num_rows == 0
         return 0
@@ -1190,7 +1190,7 @@ class MassImportTool
   # @param [string] query
   def update_record_target(query)
     begin
-      connection2 = Mysql.new(@database_host, @database_username, @database_password, @database_name)
+      connection2 = Mysql2.new(@database_host, @database_username, @database_password, @database_name)
       rowsEffected = 0
       rowsEffected = connection2.query(query)
       connection2.close
@@ -1289,7 +1289,7 @@ class MassImportTool
       @target_rating_5 = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_target_rating_5]}" #Explicit
     end
     ## initialize database connection object
-    @connection = Mysql.new(@database_host, @database_username, @database_password, @database_name)
+    @connection = Mysql2.new(@database_host, @database_username, @database_password, @database_name)
   end
 
   #file operations
@@ -1347,7 +1347,7 @@ class MassImportTool
         chapter_content = read_file_to_string("#{@import_files_path}/stories/#{r3[0]}/#{f}")
         #chapter_content = Nokogiri::HTML.parse(chapter_content, nil, encoding) rescue ""
         #chapter_content = simple_format(chapter_content)
-        chapter_content = Mysql.escape_string(chapter_content)
+        chapter_content = Mysql2.escape_string(chapter_content)
         #ic = Iconv.new('UTF-8//IGNORE', 'UTF-8')
         # chapter_content = ic.iconv(chapter_content + ' ')[0..-2]
         ## update the source chapter record
