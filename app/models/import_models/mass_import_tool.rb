@@ -1170,7 +1170,7 @@ class MassImportTool
   # @return [string or integer] if no result found returns 0
   def get_single_value_target(query)
     begin
-      connection = Mysql2.new(@database_host, @database_username, @database_password, @database_name)
+      connection = Mysql2::Client.new(:host => @database_host,:username => @database_username,:password => @database_password,:database => @database_name)
       r = connection.query(query)
       if r.num_rows == 0
         return 0
@@ -1190,7 +1190,7 @@ class MassImportTool
   # @param [string] query
   def update_record_target(query)
     begin
-      connection2 = Mysql2.new(@database_host, @database_username, @database_password, @database_name)
+      connection2 = Mysql2::Client.new(:host => @database_host,:username => @database_username,:password => @database_password,:database => @database_name)
       rowsEffected = 0
       rowsEffected = connection2.query(query)
       connection2.close
@@ -1289,7 +1289,10 @@ class MassImportTool
       @target_rating_5 = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_target_rating_5]}" #Explicit
     end
     ## initialize database connection object
-    @connection = Mysql2.new(@database_host, @database_username, @database_password, @database_name)
+    if @connection == nil
+      Mysql2::Client.new(:host => @database_host,:username => @database_username,:password => @database_password,:database => @database_name)
+    end
+
   end
 
   #file operations
