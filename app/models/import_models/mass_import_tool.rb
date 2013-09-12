@@ -195,7 +195,11 @@ class MassImportTool
     i = 0
     while i <= tl.length - 1
       temp_tag = tl[i]
-      escaped_tag_name = @connection.escape(temp_tag.tag)
+      escaped_tag_name = ""
+      if temp_tag.tag != nil
+        escaped_tag_name = @connection.escape(temp_tag.tag)
+      end
+    )
       r = @connection.query("Select id from tags where name = '#{escaped_tag_name}'; ")
       ## if not found add tag
       if !temp_tag.tag_type == "Category" || 99
@@ -1350,13 +1354,17 @@ class MassImportTool
         chapter_content = read_file_to_string("#{@import_files_path}/stories/#{r3[0]}/#{f}")
         #chapter_content = Nokogiri::HTML.parse(chapter_content, nil, encoding) rescue ""
         #chapter_content = simple_format(chapter_content)
-        chapter_content = @connection.escape(chapter_content)
+        chapter_content = ""
+        if chapter_content != nil
+          chapter_content = @connection.escape(chapter_content)
+        end
+
         #ic = Iconv.new('UTF-8//IGNORE', 'UTF-8')
         # chapter_content = ic.iconv(chapter_content + ' ')[0..-2]
         ## update the source chapter record
-        chapterid = f.gsub(".txt", "")
+        chapter_id = f.gsub(".txt", "")
         puts "reading chapter: #{chapterid}"
-        update_record_target("update #{@source_chapters_table} set storytext = \"#{chapter_content}\" where chapid = #{chapterid}")
+        update_record_target("update #{@source_chapters_table} set storytext = \"#{chapter_content}\" where chapid = #{chapter_id}")
       end
 
     end
