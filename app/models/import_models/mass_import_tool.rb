@@ -4,7 +4,7 @@
 class MassImportTool
   include ActionView::Helpers::TextHelper
   include ActionView::Helpers::TagHelper #tag_options needed by auto_link
-  require 'mysql'
+  require 'mysql2'
 
   def initialize
     #Import Class Version Number
