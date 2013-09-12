@@ -195,9 +195,12 @@ class MassImportTool
     i = 0
     while i <= tl.length - 1
       temp_tag = tl[i]
-      escaped_tag_name = ""
+
       if temp_tag.tag != nil
         escaped_tag_name = @connection.escape(temp_tag.tag)
+      else
+        puts "found nil tag"
+        escaped_tag_name = ""
       end
     )
       r = @connection.query("Select id from tags where name = '#{escaped_tag_name}'; ")
