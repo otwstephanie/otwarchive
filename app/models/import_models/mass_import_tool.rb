@@ -47,6 +47,9 @@ class MassImportTool
     #Import Archive ID
     @archive_import_id = 106
 
+    #Default Language for imported works
+    @default_language = "en"
+
     #Import Reviews (true / false)
     @import_reviews = false
 
@@ -502,6 +505,7 @@ class MassImportTool
       ## insert work object
       puts "Making new work!!!!"
       new_work = prepare_work(ns)
+      # todo investigate why i was checking length < 5 , steph
       next if new_work.chapters[0].content.length < 5
       new_work.save!
       add_chapters(new_work, import_work.old_work_id, false)
@@ -654,28 +658,39 @@ class MassImportTool
   def prepare_work(import_work)
     new_work = Work.new
     new_work.title = import_work.title
-    puts "Title to be = #{new_work.title}"
     new_work.summary = import_work.summary
+
+    puts "Title to be = #{new_work.title}"
     puts "summary to be = #{new_work.summary}"
+
     new_work.authors_to_sort_on = import_work.penname
     new_work.title_to_sort_on = import_work.title
     new_work.restricted = true
     new_work.posted = true
     puts "looking for pseud #{import_work.new_pseud_id}"
     #new_work.pseuds << Pseud.find_by_id(import_work.new_pseud_id)
+    #todo ensure handles multiple authors , steph - 9-15-2013
     new_work.authors = [Pseud.find_by_id(import_work.new_pseud_id)]
+
+    #preassign to todays date incase cant be imported
     new_work.revised_at = Date.today
     new_work.created_at = Date.today
-
+    #assign actual dates
     new_work.revised_at = import_work.updated
     new_work.created_at = import_work.published
+
     puts "revised = #{new_work.revised_at}"
     puts "crated at  = #{new_work.created_at}"
     new_work.fandom_string = @import_fandom
+
+    #todo finish rating code assignment, steph, 9-15-2013
     new_work.rating_string = "Not Rated"
     new_work.warning_strings = "None"
     puts "old work id = #{import_work.old_work_id}"
+    #todo - see if there is a better way other then setting the value here, may be redundant, steph 9-15-2013
     new_work.imported_from_url = "#{@archive_import_id}~~#{import_work.old_work_id}"
+
+    new_work.language = @default_language
     new_work = add_chapters(new_work, import_work.old_work_id, true)
     #debug info
 =begin
@@ -703,7 +718,7 @@ class MassImportTool
   #Create archivist and collection if they don't already exist"
   def create_archivist_and_collection
 
-    # make the archivist user if it doesn't exist already
+    ## make the archivist user if it doesn't exist already
     u = User.find_or_initialize_by_login(@archivist_login)
     if u.new_record?
       u.password = @archivist_password
@@ -713,13 +728,13 @@ class MassImportTool
       #below line might not be needed
       u.password_confirmation = @archivist_password
     end
-    ##if user isnt an archivist make it so
+    ## if user isnt an archivist make it so
     unless u.is_archivist?
       u.roles << Role.find_by_name("archivist")
       u.save
     end
     @archivist_user_id = u.id
-    ##ensure user is activated
+    ## ensure user is activated
     if @check_archivist_activated
       unless u.activated_at
         u.activate
@@ -739,7 +754,7 @@ class MassImportTool
       p.save
     end
     c.save
-
+    ## return the collection id to class instance variable
     @new_collection_id = c.id
     puts "Archivist #{u.login} set up and owns collection #{c.name}."
     if @categories_as_sub_collections
@@ -810,8 +825,8 @@ class MassImportTool
             unless first
               c.save!
               new_work.save
-              ##get reviews for all chapters but chapter 1, all chapter 1 reviews done in separate step post work import
-              ##due to the chapter not having an id until the work gets saved for the first time
+              ## get reviews for all chapters but chapter 1, all chapter 1 reviews done in separate step post work import
+              ## due to the chapter not having an id until the work gets saved for the first time
               import_chapter_reviews(rr[0], c.id)
             end
           end
@@ -907,6 +922,7 @@ class MassImportTool
         @source_warnings_table = "#{@temp_table_prefix}#{@source_table_prefix}warnings"
         @source_generes_table = "#{@temp_table_prefix}#{@source_table_prefix}generes"
         @source_author_query = " "
+
       when 2 ## efiction2
         @source_chapters_table = "#{@temp_table_prefix}#{@source_table_prefix}chapters"
         @source_reviews_table = "#{@temp_table_prefix}#{@source_table_prefix}reviews"
@@ -984,7 +1000,7 @@ class MassImportTool
     return a
   end
 
-# Consolidate Author Fields into User About Me String, takes Import User
+# Consolidate Author Fields into User About Me String, takes ImportUser
 # @param [importuser]  a
   def build_bio(a)
     if a.yahoo == nil
@@ -1116,6 +1132,10 @@ class MassImportTool
         when "categories"
           new_tag_type = "Freeform"
           query = "Select catid, category, parentcatid from #{@source_categories_table} where catid = #{x}"
+       # Todo: add @use_warning_tags as an option (for future use, non ao3) ,Steph
+       # when "warning"
+       #   new_tag_type = "Warning"
+
         else
           puts "Error: (get_source_work_tags): Invalid tag  type"
       end
