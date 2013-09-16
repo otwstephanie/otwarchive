@@ -10,5 +10,6 @@
     </li>    
   <% end %>
   <li><%= span_if_current ts("External Authors"), opendoors_external_authors_path, (current_page?(opendoors_external_authors_path) && params[:query].blank?) %></li>
-  <li><%= span_if_current ts("Open Doors Tools"), opendoors_tools_path %></li>  
+  <li><%= span_if_current ts("Open Doors Tools"), opendoors_tools_path %></li>
+  <li><%= span_if_current ts("Mass Import"), opendoors_imports_path %></li>
 </ul>
