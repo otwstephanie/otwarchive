@@ -367,7 +367,7 @@ class MassImportTool
           puts "Getting category tags: tag count = #{ns.tag_list.count}"
         end
       else
-        puts "Error: (assign_row_import_work): Invalid source archive type"
+        puts "Error: (assign_row_import_work): Invalid source archive type, or type not yet Implemented."
     end
     return ns
   end
@@ -375,14 +375,28 @@ class MassImportTool
   #create import record
   # @return [integer]  import archive id
   def create_import_record
-    # todo update to use ar new method and save since is proper ar class now, make sure it returns new value after save - steph 9-9-13
-    update_record_target("insert into archive_imports (name,archive_type_id,old_base_url,associated_collection_id,new_user_notice_id,existing_user_notice_id,existing_user_email_id,new_user_email_id,new_url,archivist_user_id)  values ('#{@import_name}',#{@source_archive_type},'#{
-    @source_base_url}',#{@new_collection_id},#{@new_user_notice_id},#{@existing_user_notice_id},#{@new_user_email_id},#{@existing_user_email_id},'#{@new_url}',#{@archivist_user_id})")
-    archive_import = ArchiveImport.find_by_old_base_url(@source_base_url)
-    return archive_import.id
+    # done- 9-18-2013 - update to use ar new method and save since is proper ar class now, make sure it returns new value after save - steph 9-9-13
+    #update_record_target("insert into archive_imports (name,archive_type_id,old_base_url,associated_collection_id,new_user_notice_id,existing_user_notice_id,existing_user_email_id,new_user_email_id,new_url,archivist_user_id)  values ('#{@import_name}',#{@source_archive_type},'#{
+    #@source_base_url}',#{@new_collection_id},#{@new_user_notice_id},#{@existing_user_notice_id},#{@new_user_email_id},#{@existing_user_email_id},'#{@new_url}',#{@archivist_user_id})")
+
+    archive_import = ArchiveImport.new
+    archive_import.name = @import_name
+    archive_import.archive_type_id = @source_archive_type
+    archive_import.old_base_url = @source_base_url
+    archive_import.associated_collection_id = @new_collection_id
+    archive_import.new_user_notice_id = @new_user_notice_id
+    archive_import.new_user_email_id =  @new_user_email_id
+    archive_import.existing_user_email_id = @existing_user_email_id
+    archive_import.existing_user_notice_id = @existing_user_notice_id
+    archive_import.new_url = @new_url
+    archive_import.archivist_user_id = @archivist_user_id
+    archive_import.save!
+
+    new_record = ArchiveImport.find_by_old_base_url(@source_base_url)
+    return new_record.id
   end
 
-  #create new pseud
+  #create new pseud  wrapper class
   # @param [integer] user_id
   # @param [string] penname
   # @param [true/false] default
@@ -529,7 +543,7 @@ class MassImportTool
       import_chapter_reviews(old_first_chapter_id, new_work.chapters.first.id)
 
       ## create new work import
-      create_new_work_import(new_work, ns)
+      create_new_work_import(new_work, ns,@archive_import_id)
       format_chapters(new_work.id)
       i = i + 1
     end
@@ -538,6 +552,10 @@ class MassImportTool
     @connection.close()
 
   end
+
+  #########################################
+  ## Users
+  #########################################
 
   #create user import
   # @param [integer] author_id
@@ -558,99 +576,9 @@ class MassImportTool
     end
   end
 
-  #Create new work import, takes Work , ImportWork
-  # @param [work] new_work
-  # @param [importwork] ns
-  def create_new_work_import(new_work, ns)
-    begin
-      new_wi = WorkImport.new
-      new_wi.work_id = new_work.id
-      new_wi.pseud_id = ns.new_user_id
-      new_wi.source_archive_id = @archive_import_id
-      new_wi.source_work_id = ns.old_work_id
-      new_wi.source_user_id = ns.old_user_id
-      new_wi.save!
-      return new_wi.id
-    rescue Exception => e
-      puts "Error in function create_new_work import: #{e}"
-      return 0
-    end
-  end
-
-  #save chapters, takes Work
-  # @param [Work]  new_work
-  def save_chapters(new_work)
-    puts "number of chapters: #{new_work.chapters.count} "
-    begin
-      new_work.chapters.each do |cc|
-        puts "attempting to save chapter for #{new_work.id}"
-        cc.work_id = new_work.id
-        cc.save
-        cc.errors.full_messages
-      end
-      puts "chapter saved"
-    rescue Exception => ex
-      puts error "3318: saving chapter - error in function save_chapters #{ex}"
-    end
-  end
-
-  # Create New Series Work
-  # @param [integer] series_id
-  # @param [integer] position
-  # @param [integer] work_id
-  def create_series_work(series_id, position, work_id)
-    sw = SerialWork.new
-    sw.position=position
-    sw.work_id=work_id
-    sw.series_id=series_id
-    sw.save
-    return sw.id
-  end
-
-  #import series objects
-  def import_series
-    #create the series objects in new archive
-    r = @connection.query("Select seriesid,title,summary,uid,rating,classes,characters, isopen from #{@source_series_table}")
-    if r.num_rows >= 1
-      r.each do |row|
-        #s = Series.new
-        s = create_series(row[1], row[2], row[7])
-        import_series_works(row[0], s.id)
-      end
-    end
-  end
-
-  #import works into new series
-  # @param [integer] old_series_id
-  # @param [integer] new_series_id
-  def import_series_works(old_series_id, new_series_id)
-    r = @connection.query("SELECT #{@source_inseries_table}.inorder, #{@source_inseries_table}.seriesid, work_imports.work_id
-    FROM work_imports INNER JOIN #{@source_inseries_table} ON #{@source_inseries_table}.sid = work_imports.source_work_id
-    WHERE #{@source_inseries_table}.seriesid = #{old_series_id} order by inorder asc")
-    r.each do |row|
-      work = Work.find(row[2])
-      work.series_attributes = {id: new_series_id}
-      work.save
-    end
-  end
-
-  #create series
-  # @param [string] title
-  # @param [string] summary
-  # @param [boolean] completed
-  # @return [integer] new series id
-  def create_series(title, summary, completed)
-    begin
-      s = Series.new
-      s.complete=completed
-      s.summary=summary
-      s.title = title
-      s.save!
-      return s.id
-    rescue
-      return 0
-    end
-  end
+  ###################
+  ## Work
+  ##################
 
   #Create work and return once saved, takes ImportWork
   # @return [Work] returns newly created work object
@@ -712,6 +640,108 @@ class MassImportTool
 
     return new_work
   end
+
+  #Create new work import, takes Work , ImportWork
+  # @param [work] new_work
+  # @param [importwork] ns
+  def create_new_work_import(new_work, ns,source_archive_id)
+    begin
+      new_wi = WorkImport.new
+      new_wi.work_id = new_work.id
+      new_wi.pseud_id = ns.new_user_id
+      new_wi.source_archive_id = source_archive_id
+      new_wi.source_work_id = ns.old_work_id
+      new_wi.source_user_id = ns.old_user_id
+      new_wi.save!
+      return new_wi.id
+    rescue Exception => e
+      puts "Error in function create_new_work import: #{e}"
+      return 0
+    end
+  end
+
+  #save chapters, takes Work
+  # @param [Work]  new_work
+  def save_chapters(new_work)
+    puts "number of chapters: #{new_work.chapters.count} "
+    begin
+      new_work.chapters.each do |cc|
+        puts "attempting to save chapter for #{new_work.id}"
+        cc.work_id = new_work.id
+        cc.save
+        cc.errors.full_messages
+      end
+      puts "chapter saved"
+    rescue Exception => ex
+      puts error "3318: saving chapter - error in function save_chapters #{ex}"
+    end
+  end
+
+
+###########################################################
+## Series / Serial Works
+###########################################################
+
+  # Create New Series Work
+  # @param [integer] series_id
+  # @param [integer] position
+  # @param [integer] work_id
+  def create_series_work(series_id, position, work_id)
+    sw = SerialWork.new
+    sw.position=position
+    sw.work_id=work_id
+    sw.series_id=series_id
+    sw.save
+    return sw.id
+  end
+
+  #import series objects
+  #todo make extensible in future for other archive types ala case statement.  low priority - stephanie, 9-18-2013
+  def import_series
+    #create the series objects in new archive
+    r = @connection.query("Select seriesid,title,summary,uid,rating,classes,characters, isopen from #{@source_series_table}")
+    if r.num_rows >= 1
+      r.each do |row|
+        #s = Series.new
+        s = create_series(row[1], row[2], row[7])
+        import_series_works(row[0], s.id)
+      end
+    end
+  end
+
+  #import works into new series
+  # @param [integer] old_series_id
+  # @param [integer] new_series_id
+  def import_series_works(old_series_id, new_series_id)
+    r = @connection.query("SELECT #{@source_inseries_table}.inorder, #{@source_inseries_table}.seriesid, work_imports.work_id
+    FROM work_imports INNER JOIN #{@source_inseries_table} ON #{@source_inseries_table}.sid = work_imports.source_work_id
+    WHERE #{@source_inseries_table}.seriesid = #{old_series_id} order by inorder asc")
+    r.each do |row|
+      work = Work.find(row[2])
+      work.series_attributes = {id: new_series_id}
+      work.save
+    end
+  end
+
+  #create series
+  # @param [string] title
+  # @param [string] summary
+  # @param [boolean] completed
+  # @return [integer] new series id
+  def create_series(title, summary, completed)
+    begin
+      s = Series.new
+      s.complete=completed
+      s.summary=summary
+      s.title = title
+      s.save!
+      return s.id
+    rescue
+      return 0
+    end
+  end
+
+
 
 
   #copied and modified from mass import rake, stephanies 1/22/2012
