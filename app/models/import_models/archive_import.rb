@@ -5,9 +5,7 @@ class ArchiveImport < ActiveRecord::Base
   include ActiveModel::Validations
   extend ActiveModel::Translation
 
-  has_many :users
-  has_many :collections
-  has_many :email_templates
+
 
   attr_accessor :old_url_link
   attr_accessor :new_url_link
