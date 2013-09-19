@@ -688,6 +688,7 @@ class MassImportTool
         ns.summary = row[2]
         ns.old_user_id = row[3]
         ns.rating_integer = row[4]
+        #Assign Tags
         rating_tag = ImportTag.new()
         rating_tag.tag_type = "Freeform"
         rating_tag.new_id = ns.rating_integer
@@ -971,9 +972,7 @@ class MassImportTool
         create_chapter_comment(row[2], row[3], new_chapter_id, email, row[0], 0)
       end
     end
-
   end
-
 
   #save chapters, takes Work
   # @param [Work]  new_work
