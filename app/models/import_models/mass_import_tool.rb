@@ -372,7 +372,7 @@ class MassImportTool
       r = @connection.query("Select id from tags where name = '#{escaped_tag_name}'; ")
       ## if not found add tag
       if !temp_tag.tag_type == "Category" || 99
-        if r.num_rows == 0
+        if r.count == 0
           # '' self.update_record_target("Insert into tags (name, type) values ('#{temptag.tag}','#{temptag.tag_type}');")
           temp_new_tag = Tag.new()
           temp_new_tag.type = "#{temp_tag.tag_type}"
@@ -386,7 +386,7 @@ class MassImportTool
         end
       else
         if @categories_as_tags
-          if r.num_rows == 0
+          if r.count == 0
             # '' self.update_record_target("Insert into tags (name, type) values ('#{temptag.tag}','#{temptag.tag_type}');")
             temp_new_tag = Tag.new()
             temp_new_tag.type = "Freeform"
@@ -846,7 +846,7 @@ class MassImportTool
   def import_series
     #create the series objects in new archive
     r = @connection.query("Select seriesid,title,summary,uid,rating,classes,characters, isopen from #{@source_series_table}")
-    if r.num_rows >= 1
+    if r.count >= 1
       r.each do |row|
         #s = Series.new
         s = create_series(row[1], row[2], row[7])
@@ -966,7 +966,7 @@ class MassImportTool
   def import_chapter_reviews(old_chapter_id, new_chapter_id)
     r = @connection.query("Select reviewer, uid,review,date,rating from #{@source_reviews_table} where chapid=#{old_chapter_id}")
     #only run if we have reviews
-    if r.num_rows >=1
+    if r.count >=1
       r.each do |row|
         email = get_single_value_target("Select email from #{@source_users_table} where uid = #{row[1]}")
         create_chapter_comment(row[2], row[3], new_chapter_id, email, row[0], 0)
@@ -1028,7 +1028,7 @@ class MassImportTool
             query = "Select chapid,title,inorder,notes,storytext,endnotes,sid,uid from  #{@source_chapters_table} where sid = #{old_work_id} and inorder  > #{first_chapter_index} order by inorder asc"
           end
           r = @connection.query(query)
-          puts " chaptercount #{r.num_rows} "
+          puts " chaptercount #{r.count} "
           position_holder = 2
           r.each do |rr|
             if first
@@ -1252,7 +1252,8 @@ class MassImportTool
     begin
       connection = Mysql2::Client.new(:host => @database_host,:username => @database_username,:password => @database_password,:database => @database_name)
       r = connection.query(query)
-      if r.num_rows == 0
+      r.
+      if r.count == 0
         return 0
       else
         r.each do |rr|
@@ -1556,7 +1557,7 @@ class MassImportTool
           query="Select chapid,title,inorder,notes,storytext,endnotes,sid,uid from #{@source_chapters_table} where sid = #{old_id}"
           puts query
           r = @connection.query(query)
-          puts "333 #{r.num_rows}"
+          puts "333 #{r.count}"
 
           r.each do |rr|
             c = ImportChapter.new()
