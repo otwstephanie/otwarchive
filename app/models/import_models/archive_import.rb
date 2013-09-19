@@ -1,6 +1,9 @@
 # ArchiveImport AR Model
 class ArchiveImport < ActiveRecord::Base
-
+  extend ActiveModel::Naming
+  include ActiveModel::Conversion
+  include ActiveModel::Validations
+  extend ActiveModel::Translation
 
   attr_accessor :old_url_link
   attr_accessor :new_url_link
@@ -20,10 +23,7 @@ class ArchiveImport < ActiveRecord::Base
 
 
 
-  # @return [Object]
-  def initialize
 
-  end
 
   def build_links()
     @old_url_link = "<a href=\"http://#{self.old_base_url}>#{self.name}</a>"
