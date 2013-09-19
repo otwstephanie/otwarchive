@@ -317,6 +317,7 @@ class MassImportTool
   def get_tag_list_helper(query, tag_type, tl)
     ## categories
     r = @connection.query(query)
+    puts "row count!!!!!!!!!!!!!!" + r.count
     r.each do |row|
       nt = ImportTag.new()
       nt.tag_type = tag_type
