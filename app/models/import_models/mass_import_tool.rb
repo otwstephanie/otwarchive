@@ -375,10 +375,10 @@ class MassImportTool
       temp_tag = tl[i]
        escaped_tag_name = nil
       if temp_tag.tag != nil
-        if @use_new_mysql == 1
-        escaped_tag_name = @connection.escape(temp_tag.tag)
+        if @use_new_mysql == 0
+          escaped_tag_name = @connection.escape_string(temp_tag.tag)
         else
-        escaped_tag_name = @connection.escape_string(temp_tag.tag)
+          escaped_tag_name = @connection.escape(temp_tag.tag)
         end
 
       else
@@ -1062,11 +1062,11 @@ class MassImportTool
             query = "Select chapid,title,inorder,notes,storytext,endnotes,sid,uid from  #{@source_chapters_table} where sid = #{old_work_id} and inorder  > #{first_chapter_index} order by inorder asc"
           end
           r = @connection.query(query)
-          if @use_new_mysql = 1
-          puts " chaptercount #{r.count} "
-          else
-          puts " chaptercount #{r.num_rows} "
-          end
+
+
+
+          puts " chaptercount #{get_row_count(r)} "
+
 
           position_holder = 2
           r.each do |rr|
@@ -1485,10 +1485,11 @@ class MassImportTool
         #chapter_content = simple_format(chapter_content)
         chapter_content = ""
         if chapter_content != nil
-          if @use_new_mysql = 1
-            chapter_content = @connection.escape(chapter_content)
-          else
+          if @use_new_mysql == 0
             chapter_content = @connection.escape_string(chapter_content)
+          else
+
+            chapter_content = @connection.escape(chapter_content)
           end
 
         end
