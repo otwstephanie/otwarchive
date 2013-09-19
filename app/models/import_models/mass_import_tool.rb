@@ -57,7 +57,7 @@ class MassImportTool
     @archive_import_id = 106
 
     #Default Language for imported works
-    @default_language = "en"
+    @default_language = Language.find_by_short("en")
 
     #Import Reviews (true / false)
     @import_reviews = false
