@@ -327,7 +327,7 @@ class MassImportTool
     ## categories
     r = @connection.query(query)
     count_value = get_row_count(r)
-    puts "row count!!!!!!!!!!!!!!" + count_value
+    puts "row count!!!!!!!!!!!!!! #{my_tag_list.count}"
     r.each do |row|
       nt = ImportTag.new()
       nt.tag_type = tag_type
@@ -1498,7 +1498,7 @@ class MassImportTool
         # chapter_content = ic.iconv(chapter_content + ' ')[0..-2]
         ## update the source chapter record
         chapter_id = f.gsub(".txt", "")
-        puts "reading chapter: #{chapterid}"
+        puts "reading chapter: #{chapter_id}"
         update_record_target("update #{@source_chapters_table} set storytext = \"#{chapter_content}\" where chapid = #{chapter_id}")
       end
 
