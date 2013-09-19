@@ -1252,7 +1252,7 @@ class MassImportTool
     begin
       connection = Mysql2::Client.new(:host => @database_host,:username => @database_username,:password => @database_password,:database => @database_name)
       r = connection.query(query)
-      r.
+
       if r.count == 0
         return 0
       else
@@ -1260,10 +1260,11 @@ class MassImportTool
           return rr[0]
         end
       end
+
     rescue Exception => ex
-      connection.close()
-      puts ex.message
-      puts "Error with #{query} : get_single_value_target"
+        connection.close()
+        puts ex.message
+        puts "Error with #{query} : get_single_value_target"
     end
   end
 
