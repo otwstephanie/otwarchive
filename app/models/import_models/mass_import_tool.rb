@@ -415,7 +415,7 @@ class MassImportTool
   def get_source_work_tags(tl, class_str, my_type)
     query = ""
     new_tag_type = ""
-    #class_split = Array.new
+    class_split = Array.new
     class_split = class_str.split(",")
     class_split.each do |x|
       case my_type
