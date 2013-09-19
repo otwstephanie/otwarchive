@@ -1080,7 +1080,7 @@ class MassImportTool
     #update_record_target("insert into archive_imports (name,archive_type_id,old_base_url,associated_collection_id,new_user_notice_id,existing_user_notice_id,existing_user_email_id,new_user_email_id,new_url,archivist_user_id)  values ('#{@import_name}',#{@source_archive_type},'#{
     #@source_base_url}',#{@new_collection_id},#{@new_user_notice_id},#{@existing_user_notice_id},#{@new_user_email_id},#{@existing_user_email_id},'#{@new_url}',#{@archivist_user_id})")
     begin
-    archive_import = ArchiveImport
+    archive_import = ArchiveImport.new
     archive_import.name = @import_name
     archive_import.archive_type_id = @source_archive_type
     archive_import.old_base_url = @source_base_url
