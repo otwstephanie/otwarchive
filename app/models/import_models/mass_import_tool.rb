@@ -375,7 +375,7 @@ class MassImportTool
       temp_tag = tl[i]
        escaped_tag_name = nil
       if temp_tag.tag != nil
-        if @use_new_mysql = 1
+        if @use_new_mysql == 1
         escaped_tag_name = @connection.escape(temp_tag.tag)
         else
         escaped_tag_name = @connection.escape_string(temp_tag.tag)
@@ -982,7 +982,7 @@ class MassImportTool
   #Function to return row count due to multi adapter
   def get_row_count(row_set)
     count_value = nil
-    if @use_new_mysql = 0
+    if @use_new_mysql == 0
       count_value = row_set.num_rows
     else
       count_value = row_set.count
