@@ -1079,7 +1079,7 @@ class MassImportTool
     # done- 9-18-2013 - update to use ar new method and save since is proper ar class now, make sure it returns new value after save - steph 9-9-13
     #update_record_target("insert into archive_imports (name,archive_type_id,old_base_url,associated_collection_id,new_user_notice_id,existing_user_notice_id,existing_user_email_id,new_user_email_id,new_url,archivist_user_id)  values ('#{@import_name}',#{@source_archive_type},'#{
     #@source_base_url}',#{@new_collection_id},#{@new_user_notice_id},#{@existing_user_notice_id},#{@new_user_email_id},#{@existing_user_email_id},'#{@new_url}',#{@archivist_user_id})")
-
+    begin
     archive_import = ArchiveImport.new
     archive_import.name = @import_name
     archive_import.archive_type_id = @source_archive_type
@@ -1095,6 +1095,10 @@ class MassImportTool
 
     new_record = ArchiveImport.find_by_old_base_url(@source_base_url)
     return new_record.id
+    rescue  Exception => ex
+      puts "error in add create archive import : #{ex}"
+    end
+
   end
 
   #create new pseud  wrapper class
