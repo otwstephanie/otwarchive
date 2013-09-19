@@ -368,7 +368,7 @@ class MassImportTool
         puts "found nil tag"
         escaped_tag_name = ""
       end
-    )
+
       r = @connection.query("Select id from tags where name = '#{escaped_tag_name}'; ")
       ## if not found add tag
       if !temp_tag.tag_type == "Category" || 99
