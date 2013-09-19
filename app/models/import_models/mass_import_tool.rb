@@ -323,6 +323,7 @@ class MassImportTool
       nt.old_id = row[0]
       nt.tag = row[1]
       tl.push(nt)
+      puts "tag testing" + nt.tag
     end
     return tl
   end
