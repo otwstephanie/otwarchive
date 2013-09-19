@@ -5,10 +5,12 @@ class MassImportTool
   include ActionView::Helpers::TextHelper
   include ActionView::Helpers::TagHelper #tag_options needed by auto_link
   require 'mysql2'
-
+  require 'mysql'
   def initialize
     #Import Class Version Number
     @version = 1
+
+    @use_new_mysql = 0
     #################################################
     #Database Settings
     ###############################################
@@ -21,7 +23,14 @@ class MassImportTool
     @apply_temp_prefix = 1
 
     #TODO NOTE! change to nil for final version, as there will be no default
-    @connection = Mysql2::Client.new(:host => @database_host,:username => @database_username,:password => @database_password,:database => @database_name)
+    @connection = nil
+    if @use_new_mysql == 0 then
+      @connection = Mysql.new(@database_host, @database_username, @database_password, @database_name)
+    else
+      @connection = Mysql2::Client.new(:host => @database_host,:username => @database_username,:password => @database_password,:database => @database_name)
+    end
+
+
     #####################################################
 
     #Archivist Settings
@@ -317,7 +326,8 @@ class MassImportTool
   def get_tag_list_helper(query, tag_type, tl)
     ## categories
     r = @connection.query(query)
-    puts "row count!!!!!!!!!!!!!!" + r.count
+    count_value = get_row_count(r)
+    puts "row count!!!!!!!!!!!!!!" + count_value
     r.each do |row|
       nt = ImportTag.new()
       nt.tag_type = tag_type
@@ -363,18 +373,24 @@ class MassImportTool
     i = 0
     while i <= tl.length - 1
       temp_tag = tl[i]
-
+       escaped_tag_name = nil
       if temp_tag.tag != nil
+        if @use_new_mysql = 1
         escaped_tag_name = @connection.escape(temp_tag.tag)
+        else
+        escaped_tag_name = @connection.escape_string(temp_tag.tag)
+        end
+
       else
         puts "found nil tag"
         escaped_tag_name = ""
       end
 
       r = @connection.query("Select id from tags where name = '#{escaped_tag_name}'; ")
+      count_value = get_row_count(r)
       ## if not found add tag
       if !temp_tag.tag_type == "Category" || 99
-        if r.count == 0
+        if count_value == 0
           # '' self.update_record_target("Insert into tags (name, type) values ('#{temptag.tag}','#{temptag.tag_type}');")
           temp_new_tag = Tag.new()
           temp_new_tag.type = "#{temp_tag.tag_type}"
@@ -388,7 +404,7 @@ class MassImportTool
         end
       else
         if @categories_as_tags
-          if r.count == 0
+          if count_value == 0
             # '' self.update_record_target("Insert into tags (name, type) values ('#{temptag.tag}','#{temptag.tag_type}');")
             temp_new_tag = Tag.new()
             temp_new_tag.type = "Freeform"
@@ -963,13 +979,28 @@ class MassImportTool
     new_comment.save
   end
 
+  #Function to return row count due to multi adapter
+  def get_row_count(row_set)
+    count_value = nil
+    if @use_new_mysql = 0
+      count_value = row_set.num_rows
+    else
+      count_value = row_set.count
+    end
+    return count_value
+  end
+
   #import chapter reviews for efic 3 story takes old chapter id, new chapter id
+  # updated multi adapter use 9-19-2013 Stephanie
   # @param [integer] old_chapter_id
   # @param [integer] new_chapter_id
   def import_chapter_reviews(old_chapter_id, new_chapter_id)
     r = @connection.query("Select reviewer, uid,review,date,rating from #{@source_reviews_table} where chapid=#{old_chapter_id}")
+
+    count_value = get_row_count(r)
+
     #only run if we have reviews
-    if r.count >=1
+    if count_value >=1
       r.each do |row|
         email = get_single_value_target("Select email from #{@source_users_table} where uid = #{row[1]}")
         create_chapter_comment(row[2], row[3], new_chapter_id, email, row[0], 0)
@@ -1031,7 +1062,12 @@ class MassImportTool
             query = "Select chapid,title,inorder,notes,storytext,endnotes,sid,uid from  #{@source_chapters_table} where sid = #{old_work_id} and inorder  > #{first_chapter_index} order by inorder asc"
           end
           r = @connection.query(query)
+          if @use_new_mysql = 1
           puts " chaptercount #{r.count} "
+          else
+          puts " chaptercount #{r.num_rows} "
+          end
+
           position_holder = 2
           r.each do |rr|
             if first
@@ -1248,22 +1284,34 @@ class MassImportTool
     return get_single_value_target("select id from users where email = '#{emailaddress}'")
   end
 
+  # Updated to be able to use multiple gems
   #query and return a single value from database
   # @param [string] query
   # @return [string or integer] if no result found returns 0
   def get_single_value_target(query)
     begin
-      connection = Mysql2::Client.new(:host => @database_host,:username => @database_username,:password => @database_password,:database => @database_name)
-      r = connection.query(query)
+      r = nil
+      connection = nil
+      count_value = nil
 
-      if r.count == 0
+      if @use_new_mysql == 0
+        connection = Mysql.new(@database_host, @database_username, @database_password, @database_name)
+        r = connection.query(query)
+        count_value = r.num_rows
+      else
+        connection = Mysql2::Client.new(:host => @database_host,:username => @database_username,:password => @database_password,:database => @database_name)
+        r = connection.query(query)
+        count_value = r.count
+      end
+
+      if count_value == 0
         return 0
       else
         r.each do |rr|
           return rr[0]
         end
       end
-
+      connection.close()
     rescue Exception => ex
         connection.close()
         puts ex.message
@@ -1437,7 +1485,12 @@ class MassImportTool
         #chapter_content = simple_format(chapter_content)
         chapter_content = ""
         if chapter_content != nil
-          chapter_content = @connection.escape(chapter_content)
+          if @use_new_mysql = 1
+            chapter_content = @connection.escape(chapter_content)
+          else
+            chapter_content = @connection.escape_string(chapter_content)
+          end
+
         end
 
         #ic = Iconv.new('UTF-8//IGNORE', 'UTF-8')
