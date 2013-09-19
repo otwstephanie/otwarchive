@@ -1,10 +1,5 @@
 # ArchiveImport AR Model
 class ArchiveImport < ActiveRecord::Base
-  extend ActiveModel::Naming
-  include ActiveModel::Conversion
-  include ActiveModel::Validations
-  extend ActiveModel::Translation
-
 
 
   attr_accessor :old_url_link
