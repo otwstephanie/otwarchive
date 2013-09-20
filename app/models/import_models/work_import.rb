@@ -1,10 +1,5 @@
 # WorkImport AR Model
 class WorkImport < ActiveRecord::Base
-  extend ActiveModel::Naming
-  include ActiveModel::Conversion
-  include ActiveModel::Validations
-  extend ActiveModel::Translation
-
   has_many(:works)
 
   attr_accessor :source_user_id

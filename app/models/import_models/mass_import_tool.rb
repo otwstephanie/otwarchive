@@ -108,6 +108,9 @@ class MassImportTool
     #=========================================================
     #Destination Options / Settings
     #=========================================================
+    #bypass check to see if existing
+    @rerun_import = 0
+
     @new_url = ""
     @check_archivist_activated = true
     #If using ao3 cats, sort or skip
@@ -183,11 +186,23 @@ class MassImportTool
     puts "4) Importing Stories"
     i = 0
     r.each do |row|
-      puts " Importing Story #{i}"
+      puts " Importing Story ID#{row[0]}"
+      #Check to ensure work hasnt already been imported for this import run / archive
+      #ignored if rerun_import  = 1
+      if @rerun_import = 0
+        temp_work_import = WorkImport.find_by_source_archive_id_and_source_work_id(@archive_import_id,row[0])
+        # if puts msg isnt important could use next if as done below when checking for presence of chapters
+        if temp_work_import.empty?
+          puts "##### Story Previously Imported For This Archive #####"
+          next
+        end
+      end
+
+
       ## create new ImportWork Object
       ns = ImportWork.new()
       ## create new importuser object
-      #a = ImportUser.new()
+      a = ImportUser.new()
       ## Create Taglisit for this story
       my_tag_list = Array.new()
       ns.tag_list = my_tag_list
@@ -195,14 +210,18 @@ class MassImportTool
       ## assign data to import work object
       ns = assign_row_import_work(ns, row)
       my_tag_list = ns.tag_list
+
+      ## this was moved to assing_row_import_work, 9-20-2013 Stephanie
       ## Set source archive id for new story / work object
-      ns.source_archive_id = @archive_import_id
-      puts "attempting to get new user id, user: #{ns.old_user_id}, source: #{ns.source_archive_id}"
+      #ns.source_archive_id = @archive_import_id
+
       ## goto next if no chapters
       num_source_chapters = 0
       num_source_chapters = get_single_value_target("Select chapid  from #{@source_chapters_table} where sid = #{ns.old_work_id} limit 1")
       next if num_source_chapters == 0
       #todo log oldsid / story name to error log with unimportable error , reason no source chapters
+
+      puts "Attempting to get new user ID.  #{ns.old_user_id}, source: #{ns.source_archive_id}"
 
       ## see if user / author exists for this import already
       ns.new_user_id = self.get_new_user_id_from_imported(ns.old_user_id, @archive_import_id)
@@ -272,7 +291,7 @@ class MassImportTool
       new_work.expected_number_of_chapters = new_work.chapters.count
       new_work.save
 
-      puts "taglist count = #{my_tag_list.count}"
+      puts "Taglist count = #{my_tag_list.count}"
       my_tag_list.each do |t|
         add_work_taggings(new_work.id, t)
       end
@@ -282,6 +301,7 @@ class MassImportTool
       import_chapter_reviews(old_first_chapter_id, new_work.chapters.first.id)
 
       ## create new work import
+      put "saving work import record"
       create_new_work_import(new_work, ns,@archive_import_id)
       format_chapters(new_work.id)
       i = i + 1
@@ -696,9 +716,10 @@ class MassImportTool
   # @param [import_work] ns
   # @param [mysql_row] row
   def assign_row_import_work(ns, row)
+    ns.source_archive_id = @archive_import_id
+
     case @source_archive_type
       when 4   ## storyline
-        ns.source_archive_id = @archive_import_id
         ns.old_work_id = row[0]
         #puts ns.old_work_id
         ns.title = row[1]
