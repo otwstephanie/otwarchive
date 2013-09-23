@@ -167,24 +167,19 @@ class MassImportTool
   def import_data
     puts "1) Setting Import Values"
     self.set_import_strings(@source_archive_type)
-    ## create collection & archivist
     self.create_archivist_and_collection
-    ## create import record
     self.create_import_record
-    ## set file upload path with import id from previous step
     @import_files_path = "#{Rails.root.to_s}/imports/#{@archive_import_id}"
-    ## check that import directory exists if not create it , do other import processes move extract etc
     puts "2) Running File Operations"
     run_file_operations
-    ## Update Tags and get Taglist
     puts "3) Updating Tags"
-    tag_list = Array.new()
+    source_archive_tag_list = Array.new()
     ## create list of all tags used in source
-    tag_list = get_tag_list(tag_list)
+    source_archive_tag_list = get_tag_list(source_archive_tag_list)
     ## check for tag existance on target archive
-    tag_list = self.fill_tag_list(tag_list)
+    source_archive_tag_list = self.fill_tag_list(source_archive_tag_list)
 
-    ## pull source stories
+    ## pull source stories from database to array of rows
     r = @connection.query("SELECT * FROM #{@source_stories_table} ;")
     puts "4) Importing Stories"
     i = 0
@@ -201,46 +196,40 @@ class MassImportTool
         end
       end
 
-
-      ## create new ImportWork Object
       ns = ImportWork.new()
-      ## create new importuser object
-      a = ImportUser.new()
+      import_user = ImportUser.new()
+
       ## Create Taglisit for this story
-      my_tag_list = Array.new()
-      ns.tag_list = my_tag_list
+      ns.tag_list =  Array.new()
 
       ## assign data to import work object
       ns = ImportWork.new
       ns = assign_row_import_work(ns, row)
-      my_tag_list = ns.tag_list
-
+      ns.tag_list
 
       ## goto next if no chapters
       num_source_chapters = 0
       num_source_chapters = get_single_value_target("Select chapid  from #{@source_chapters_table} where sid = #{ns.old_work_id} limit 1")
       next if num_source_chapters == 0
-      #todo log oldsid / story name to error log with unimportable error , reason no source chapters
-
-      puts "Attempting to get new user ID.  #{ns.old_user_id}, source: #{ns.source_archive_id}"
 
       ## see if user / author exists for this import already
       user_import = UserImport.find_by_source_user_id_and_source_archive(old_id,@archive_import_id)
-      puts "The New user id!!!! ie value at this point #{ns.new_user_id}"
-      if user_import != nil 
+
+      if user_import != nil
         ns.new_user_id = user_import.id
       end
       ## get import user object from source database
-      a = self.get_import_user_object_from_source(ns.old_user_id)
-      if ns.new_user_id == 0
+      import_user = self.get_import_user_object_from_source(ns.old_user_id)
+      if user_import == nil
+        ns.new_user_id = 0
         puts "user didnt exist in this import session"
         ## see if user account exists in main archive by checking email,
-        temp_user_object = User.find_by_email(a.email)
+        temp_user_object = User.find_by_email(import_user.email)
 
         if temp_user_object == nil
           ## if not exist , add new user with user object, passing old author object
           import_user = ImportUser.new
-          import_user = self.add_user(a)
+          import_user = self.add_user(import_user)
           ## pass values to new story object
           ns.penname = import_user.penname
           ns.new_user_id = import_user.new_user_id
@@ -251,52 +240,50 @@ class MassImportTool
           ## set the penname on newly created pseud to proper value
           update_record_target("update pseuds set name = '#{ns.penname}' where id = #{new_pseud_id}")
           ## create user import
-          create_user_import(import_user.new_user_id, new_pseud_id, ns.old_user_id, @archive_import_id)
+
+
+          #create_user_import(import_user.new_user_id, new_pseud_id, ns.old_user_id, @archive_import_id)
           ns.new_pseud_id = new_pseud_id
         else
           ## user exists, but is being imported
           ## insert the mapping value
           puts "Debug: User existed in Target Archive"
-          ns.penname = a.penname
+          ns.penname = import_user.penname
           ## check to see if penname exists as pseud for existing user
           temp_pseud_object = Pseud.find_by_user_id_and_name(temp_user_object.id,ns.penname)
           #temp_pseud_id = get_pseud_id_for_penname(temp_author_object.id, ns.penname)
           if temp_pseud_object == nil
             ## add pseud if not exist
-            temp_pseud_object = create_new_pseud(temp_user_object.id, a.penname, true, "Imported")
+            temp_pseud_object = create_new_pseud(temp_user_object.id, import_user.penname, true, "Imported")
             ns.new_pseud_id = temp_pseud_object.id
             ## create USER IMPORT
             create_user_import(temp_user_object.id, temp_pseud_object.id, ns.old_user_id, @archive_import_id)
             # 'temp_pseud_id = get_pseud_id_for_penname(ns.new_user_id,ns.penname)
+            #todo edit out
             update_record_target("update user_imports set pseud_id = #{temp_pseud_object.id} where user_id = #{ns.new_user_id} and source_archive_id = #{@archive_import_id}")
             ns.new_user_id = temp_pseud_object.id
-            a.pseud_id = temp_pseud_object.id
+            import_user.pseud_id = temp_pseud_object.id
           end
         end
       else
-        ns.penname = a.penname
-        a.pseud_id = get_pseud_id_for_penname(ns.new_user_id, ns.penname)
-        puts "#{a.pseud_id} this is the matching pseud id"
-        ns.new_pseud_id = a.pseud_id
+        ns.penname = import_user.penname
+        import_user.pseud_id = get_pseud_id_for_penname(ns.new_user_id, ns.penname)
+        puts "#{import_user.pseud_id} this is the matching pseud id"
+        ns.new_pseud_id = import_user.pseud_id
       end
       ## insert work object
-      puts "Making new work!!!!"
       new_work = prepare_work(ns)
       # todo investigate why i was checking length < 5 , steph
       next if new_work.chapters[0].content.length < 5
       new_work.save!
       add_chapters(new_work, ns.old_work_id, false)
-      ## attempt to add id to first chapter
-      puts "post save chapter count = #{new_work.chapters.size}"
-
-      puts "New Work ID = #{new_work.id}"
 
       ## add all chapters to work
       new_work.expected_number_of_chapters = new_work.chapters.count
       new_work.save
 
-      puts "Taglist count = #{my_tag_list.count}"
-      my_tag_list.each do |t|
+      puts "Taglist count = #{ns.tag_list.count}"
+      ns.tag_list.each do |t|
         add_work_taggings(new_work.id, t)
       end
 
@@ -304,8 +291,6 @@ class MassImportTool
       old_first_chapter_id = get_single_value_target("Select chapid from  #{@source_chapters_table} where sid = #{ns.old_work_id} order by inorder asc Limit 1")
       import_chapter_reviews(old_first_chapter_id, new_work.chapters.first.id)
 
-      ## create new work import
-      put "saving work import record"
       create_new_work_import(new_work, ns, @archive_import_id)
       format_chapters(new_work.id)
       i = i + 1
@@ -356,23 +341,19 @@ class MassImportTool
       #check for tag presence at destination
       lookup_tag = Tag.find_by_name(temp_tag.tag)
       if lookup_tag != nil
-        #if found assign new_id
         temp_tag.new_id = lookup_tag.id
       else
         #Create new tag
+        temp_new_tag.name = "#{temp_tag.tag}"
         if !temp_tag.tag_type == "Category" || 99
           temp_new_tag.type = "#{temp_tag.tag_type}"
-          temp_new_tag.name = "#{temp_tag.tag}"
-          temp_new_tag.save
-          temp_tag.new_id = temp_new_tag.id
         else
           if @categories_as_tags
             temp_new_tag.type = "Freeform"
-            temp_new_tag.name = "#{temp_tag.tag}"
-            temp_new_tag.save
-            temp_tag.new_id = temp_new_tag.id
           end
         end
+        temp_new_tag.save
+        temp_tag.new_id = temp_new_tag.id
       end
 
       ## return importtag object with new id and its corresponding data ie old id and tag to array
@@ -485,11 +466,8 @@ class MassImportTool
     #new_work.pseuds << Pseud.find_by_id(import_work.new_pseud_id)
     #todo ensure handles multiple authors , steph - 9-15-2013
     new_work.authors = [Pseud.find_by_id(import_work.new_pseud_id)]
-
-    #preassign to todays date incase cant be imported
     new_work.revised_at = Date.today
     new_work.created_at = Date.today
-    #assign actual dates
     new_work.revised_at = import_work.updated
     new_work.created_at = import_work.published
 
@@ -506,23 +484,10 @@ class MassImportTool
 
     new_work.language = @default_language
     new_work = add_chapters(new_work, import_work.old_work_id, true)
-    #debug info
-=begin
-    new_work.chapters.each do |chap|
-      puts "#{chap.title}"
-      puts "#{chap.content}"
-    end
-    puts "chapters in new_work.chapters = #{new_work.chapters.size}"
-=end
 
     ##assign to main import collection
     new_work.collections << Collection.find(@new_collection_id)
-    if @categories_as_sub_collections
-      collection_array = get_work_collections(import_work.categories)
-      collection_array.each do |cobj|
-        new_work.collections << cobj unless new_work.collections.include?(cobj)
-      end
-    end
+
     return new_work
   end
 
@@ -594,19 +559,16 @@ class MassImportTool
       #below line might not be needed
       u.password_confirmation = @archivist_password
     end
-    ## if user isnt an archivist make it so
     unless u.is_archivist?
       u.roles << Role.find_by_name("archivist")
       u.save
     end
     @archivist_user_id = u.id
-    ## ensure user is activated
     if @check_archivist_activated
       unless u.activated_at
         u.activate
       end
     end
-    ## make the collection if it doesn't exist already
     c = Collection.find_or_initialize_by_name(@new_collection_name)
     if c.new_record?
       c.description = @new_collection_description
@@ -698,8 +660,6 @@ class MassImportTool
           ix = 1
           r.each do |rr|
             c = new_work.chapters.build
-            #c.new_work_id = ns.new_work_id     will be made automatically
-            #c.pseud_id = ns.pseuds[0]
             c.title = rr[1]
             c.created_at = rr[4]
             #c.updated_at = rr[4]
@@ -1028,10 +988,10 @@ class MassImportTool
   def update_record_target(query)
     begin
       connection2 = Mysql2::Client.new(:host => @database_host, :username => @database_username, :password => @database_password, :database => @database_name)
-      rowsEffected = 0
-      rowsEffected = connection2.query(query)
+      rows_effected = 0
+      rows_effected = connection2.query(query)
       connection2.close
-      return rowsEffected
+      return rows_effected
     rescue Exception => ex
       connection2.close()
       puts ex.message
@@ -1165,7 +1125,7 @@ class MassImportTool
     text = '' if text.nil?
     text = text.dup
     start_tag = tag('p', html_options, true)
-    text = sanitize(text) unless options[:sanitize] == false
+    text = sanitize(text) unless !options[:sanitize]
     text = text.to_str
     text.gsub!(/\r\n?/, "\n") # \r\n and \r -> \n
     text.gsub!(/\n\n+/, "</p>\n\n#{start_tag}") # 2+ newline  -> paragraph
