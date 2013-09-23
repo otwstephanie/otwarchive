@@ -4,6 +4,9 @@ class UserImport < ActiveRecord::Base
   include ActiveModel::Conversion
   include ActiveModel::Validations
   extend ActiveModel::Translation
+  has_one :import_models_archive_import, :class_name => 'ImportModels::ArchiveImport'
+  has_one :pseud
+  validates_presence_of(:import_models_archive_import,:pseud)
 
 
   attr_accessor :source_user_id
