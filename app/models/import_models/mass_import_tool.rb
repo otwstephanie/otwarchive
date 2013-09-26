@@ -267,6 +267,7 @@ class MassImportTool
         end
       else
         ns.penname = import_user.penname
+        #TODO  CONVERT TO AR , CAN BE GOTTEN BEFORE POSSIBLY?
         import_user.pseud_id = get_pseud_id_for_penname(ns.new_user_id, ns.penname)
         puts "#{import_user.pseud_id} this is the matching pseud id"
         ns.new_pseud_id = import_user.pseud_id
@@ -494,13 +495,13 @@ class MassImportTool
   #Create new work import, takes Work , ImportWork
   # @param [work] new_work
   # @param [importwork] ns
-  # @param [integer] source_archive_id
-  def create_new_work_import(new_work, ns, source_archive_id)
+  # @param [integer] archive_import_id
+  def create_new_work_import(new_work, ns, archive_import_id)
     begin
       new_wi = WorkImport.new
       new_wi.work_id = new_work.id
       new_wi.pseud_id = ns.new_user_id
-      new_wi.source_archive_id = source_archive_id
+      new_wi.source_archive_id = archive_import_id
       new_wi.source_work_id = ns.old_work_id
       new_wi.source_user_id = ns.old_user_id
       new_wi.save!
@@ -811,11 +812,11 @@ class MassImportTool
   # @param [true/false] default
   # @param [string] description
   # @return [pseud]  new pseud id
-  def create_new_pseud(user_id, penname, default, description)
+  def create_new_pseud(user_id, name, default, description)
     begin
       new_pseud = Pseud.new
       new_pseud.user_id = user_id
-      new_pseud.name = penname
+      new_pseud.name = name
       new_pseud.is_default = default
       new_pseud.description = description
       new_pseud.save!
@@ -921,11 +922,15 @@ class MassImportTool
     return get_single_value_target("select id from pseuds where user_id = #{user_id} and name = '#{penname}'")
   end
 
+=begin
   def get_new_work_id_fresh(source_work_id, source_archive_id)
     puts "13-#{source_work_id}~~#{source_archive_id}"
+
     return get_single_value_target("select id from works where imported_from_url = '#{source_work_id}~~#{source_archive_id}'")
   end
+=end
 
+=begin
   # Return new story id given old id and archive
   #updated to use ar 9-23-2013
   def get_new_work_id_from_old_id(source_archive_id, old_work_id) #
@@ -946,6 +951,7 @@ class MassImportTool
   def get_user_id_from_email(emailaddress)
     return get_single_value_target("select id from users where email = '#{emailaddress}'")
   end
+=end
 
   # Updated to be able to use multiple gems
   #query and return a single value from database

@@ -27,34 +27,6 @@ class ImportHelper
     return tag_list
   end
 
-# Consolidate Author Fields into User About Me String, takes ImportUser
-# @param [importuser]  a
-  def build_bio(a)
-    if a.yahoo == nil
-      a.yahoo = " "
-    end
-    if a.aol.length > 1 || a.yahoo.length > 1 || a.website.length > 1 || a.icq.length > 1 || a.msn.length > 1
-      if a.bio.length > 0
-        a.bio << "<br /><br />"
-      end
-    end
-    if a.aol.length > 1
-      a.bio << " <br /><b>AOL / AIM :</b><br /> #{a.aol}"
-    end
-    if a.website.length > 1
-      a.bio << "<br /><b>Website:</ b><br /> #{a.website}"
-    end
-    if a.yahoo.length > 1
-      a.bio << "<br /><b>Yahoo :</b><br /> #{a.yahoo}"
-    end
-    if a.msn.length > 1
-      a.bio << "<br /><b>Windows Live:</ b><br /> #{a.msn}"
-    end
-    if a.icq.length > 1
-      a.bio << "<br /><b>ICQ :</b><br /> #{a.icq}"
-    end
-    return a
-  end
 
   #assign row data to import_Work object
   # @param [import_work] ns

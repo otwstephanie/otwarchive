@@ -24,4 +24,32 @@ attr_accessor :email
 attr_accessor :is_adult
 attr_accessor :pseud_id
 
+# Consolidate Author Fields into User About Me String
+  def build_bio()
+    if self.yahoo == nil
+      self.yahoo = " "
+    end
+    if self.aol.length > 1 || self.yahoo.length > 1 || self.website.length > 1 || self.icq.length > 1 || self.msn.length > 1
+      if self.bio.length > 0
+        self.bio << "<br /><br />"
+      end
+    end
+    if self.aol.length > 1
+      self.bio << " <br /><b>AOL / AIM :</b><br /> #{self.aol}"
+    end
+    if self.website.length > 1
+      self.bio << "<br /><b>Website:</ b><br /> #{self.website}"
+    end
+    if self.yahoo.length > 1
+      self.bio << "<br /><b>Yahoo :</b><br /> #{self.yahoo}"
+    end
+    if self.msn.length > 1
+      self.bio << "<br /><b>Windows Live:</ b><br /> #{self.msn}"
+    end
+    if self.icq.length > 1
+      self.bio << "<br /><b>ICQ :</b><br /> #{self.icq}"
+    end
+  end
+
+
 end
