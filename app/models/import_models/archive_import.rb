@@ -1,8 +1,13 @@
 # ArchiveImport AR Model
 class ArchiveImport < ActiveRecord::Base
-
-  attr_accessible :old_url_link, :new_url_link,:archivist_link,:notes
-  attr_accessible :associated_collection_id,:name,:old_base_url,:new_url
+  attr_accessible :old_url_link
+  attr_accessible :archivist_link
+  attr_accessible :new_url_link
+  attr_accessible :notes
+  attr_accessible :associated_collection_id
+  attr_accessible :name,
+  attr_accessible :old_base_url
+  attr_accessible :new_url
 
   def build_links()
     @old_url_link = "<a href=\"http://#{self.old_base_url}>#{self.name}</a>"

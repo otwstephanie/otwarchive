@@ -1,5 +1,5 @@
 # ArchiveImport AR Model
-class ArchiveImport < ActiveRecord::Base
+class ArchiveImportSettings < ActiveRecord::Base
 
   attr_accessible :archive_import_id
   attr_accessible :archivist_user_id
@@ -32,4 +32,6 @@ class ArchiveImport < ActiveRecord::Base
   attr_accessible :archivist_login
   attr_accessible :archivist_password
   attr_accessible :archivist_email
+  attr_accessible :new_collection_title
+  attr_accessible :new_collection_description
 end

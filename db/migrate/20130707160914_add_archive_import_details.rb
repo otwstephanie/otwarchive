@@ -33,6 +33,8 @@ class AddArchiveImportDetails < ActiveRecord::Migration
       t.string  :archivist_login
       t.string  :archivist_password
       t.string  :archivist_email
+      t.string  :new_collection_title
+      t.string  :new_collection_description
 
     end
    end

@@ -7,31 +7,31 @@ class MassImportTool
   require 'mysql2'
   require 'mysql'
 
-  def initialize
+  def initialize(import_id)
     #Import Class Version Number
     @version = 1
-    @ai = ArchiveImport.new
-
+    @ai = ArchiveImport.find(import_id)
     @ih = ImportHelper.new
-    @ais = ArchiveImportSettings
-    @use_new_mysql = 0
+    @ais = ArchiveImportSettings.new
+    ais = ArchiveImportSettings.find_all_by_archive_import_id(import_id)
+
     #################################################
     #Database Settings
     ###############################################
-    @sql_filename = "rescued_archive.sql"
-    @source_database_host = "localhost"
-    @source_database_username = "stephanies"
-    @source_database_password = "Trustno1"
-    @source_database_name = "stephanies_development"
-    @source_temp_table_prefix = "testing"
-    @apply_temp_table_prefix = 1
+    @sql_filename =
+
+
+
+
+
+
 
     #TODO NOTE! change to nil for final version, as there will be no default
     @connection = nil
     if @use_new_mysql == 0 then
-      @connection = Mysql.new(@source_database_host, @source_database_username, @source_database_password, @source_database_name)
+      @connection = Mysql.new(@ais.source_database_host, @ais.source_database_username, @ais.source_database_password, @ais.source_database_name)
     else
-      @connection = Mysql2::Client.new(:host => @source_database_host, :username => @source_database_username, :password => @source_database_password, :database => @source_database_name)
+      @connection = Mysql2::Client.new(:host => @ais.source_database_host, :username => @ais.source_database_username, :password => @ais.source_database_password, :database => @source_database_name)
     end
 
 
@@ -548,29 +548,31 @@ class MassImportTool
   def create_archivist_and_collection
 
     ## make the archivist user if it doesn't exist already
-    u = User.find_or_initialize_by_login(@archivist_login)
+    u = User.find_or_initialize_by_login(@ais.archivist_login)
     if u.new_record?
-      u.password = @archivist_password
-      u.email = @archivist_email
+      u.password = @ais.archivist_password
+      u.email = @ais.archivist_email
       u.age_over_13 = "1"
       u.terms_of_service = "1"
       #below line might not be needed
-      u.password_confirmation = @archivist_password
+      u.password_confirmation = @ais.archivist_password
     end
     unless u.is_archivist?
       u.roles << Role.find_by_name("archivist")
       u.save
     end
     @archivist_user_id = u.id
-    if @check_archivist_activated == 1
+    if @ais.check_archivist_activated == 1
       unless u.activated_at
         u.activate
       end
     end
     c = Collection.find_or_initialize_by_name(@new_collection_name)
     if c.new_record?
-      c.description = @new_collection_description
-      c.title = @new_collection_title
+      c.description = @ais.new_collection_description
+      c.title = @ais.new_collection_title
+    else
+      #todo consider setting values for consistance back from lookup above steph 9-27
     end
     ## add the user as an owner if not already one
     unless c.owners.include?(u.default_pseud)
@@ -581,7 +583,7 @@ class MassImportTool
     end
     c.save
     ## return the collection id to class instance variable
-    @new_collection_id = c.id
+    @ai.associated_collection_id = c.id
     puts "Archivist #{u.login} set up and owns collection #{c.name}."
 =begin
     if @categories_as_sub_collections
@@ -599,7 +601,7 @@ class MassImportTool
   #Function to return row count due to multi adapter
   def get_row_count(row_set)
     count_value = nil
-    if @use_new_mysql == 0
+    if @ais == 0
       count_value = row_set.num_rows
     else
       count_value = row_set.count
@@ -960,12 +962,12 @@ class MassImportTool
       connection = nil
       count_value = nil
 
-      if @use_new_mysql == 0
-        connection = Mysql.new(@source_database_host, @source_database_username, @source_database_password, @source_database_name)
+      if @ais.use_new_mysql == 0
+        connection = Mysql.new(@ais.source_database_host, @ais.source_database_username, @ais.source_database_password, @ais.source_database_name)
         r = connection.query(query)
 
       else
-        connection = Mysql2::Client.new(:host => @source_database_host, :username => @source_database_username, :password => @source_database_password, :database => @source_database_name)
+        connection = Mysql2::Client.new(:host => @ais.source_database_host, :username => @ais.source_database_username, :password => @ais.source_database_password, :database => @ais.source_database_name)
         r = connection.query(query)
 
       end
@@ -990,7 +992,7 @@ class MassImportTool
   # @param [string] query
   def update_record_target(query)
     begin
-      connection2 = Mysql2::Client.new(:host => @source_database_host, :username => @source_database_username, :password => @source_database_password, :database => @source_database_name)
+      connection2 = Mysql2::Client.new(:host => @ais.source_database_host, :username => @ais.source_database_username, :password => @ais.source_database_password, :database => @ais.source_database_name)
       rows_effected = 0
       rows_effected = connection2.query(query)
       connection2.close
@@ -1152,7 +1154,7 @@ class MassImportTool
         #chapter_content = simple_format(chapter_content)
         chapter_content = ""
         if chapter_content != nil
-          if @use_new_mysql == 0
+          if @ais.use_new_mysql == 0
             chapter_content = @connection.escape_string(chapter_content)
           else
 
