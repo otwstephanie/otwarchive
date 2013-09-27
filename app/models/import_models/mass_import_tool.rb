@@ -10,137 +10,21 @@ class MassImportTool
   def initialize(import_id)
     #Import Class Version Number
     @version = 1
+
+    #Archive Import Object
     @ai = ArchiveImport.find(import_id)
-    @ih = ImportHelper.new
-    @ais = ArchiveImportSettings.new
-    ais = ArchiveImportSettings.find_all_by_archive_import_id(import_id)
+    #Archive Import Settings
+    @ais = ArchiveImportSettings.find_all_by_archive_import_id(import_id)
 
-    #################################################
-    #Database Settings
-    ###############################################
-    @sql_filename =
-
-
-
-
-
-
-
-    #TODO NOTE! change to nil for final version, as there will be no default
     @connection = nil
-    if @use_new_mysql == 0 then
+    if @ais.use_new_mysql == 0 then
       @connection = Mysql.new(@ais.source_database_host, @ais.source_database_username, @ais.source_database_password, @ais.source_database_name)
     else
       @connection = Mysql2::Client.new(:host => @ais.source_database_host, :username => @ais.source_database_username, :password => @ais.source_database_password, :database => @source_database_name)
     end
 
-
-    #####################################################
-
-    #Archivist Settings
-    ###################
-    @create_archivist_account = true
-    @archivist_login = "StephanieTest"
-    @archivist_password = "password"
-    @archivist_email = "stephaniesmithstl@gmail.com"
-    @archivist_user_id = 0
-    @archive_has_chapter_files = 1
-    @archive_chapters_filename = "chapters.zip"
-    #Import Settings
-    ####################
-
-    #Import Job Name
-    @import_name = "New Import"
-    @import_fandom = "Harry Potter"
-
-    #Create record for imported archive (false if already exists)
-    @create_archive_import_record = 1
-
-    #will error if not unique, just let it automatically create it and assign it if you are unsure
-    #Import Archive ID
-    @archive_import_id = 106
-
     #Default Language for imported works
     @default_language = Language.find_by_short("en")
-
-    #Import Reviews (true / false)
-    @import_reviews = 0
-
-    #Match Existing Authors by Email-Address
-    @match_existing_authors = 0
-
-    #category mapping
-    #================
-    @categories_as_sub_collections = false
-    #Categories as sub-collections isn't supported at Ao3, left for later use by other archives
-    @categories_as_tags = 0
-    @subcategory_depth = 1
-    #values "merge_top" "move_top" "drop" "merge all" "custom"
-    @subcategory_remap_method = "merge_top"
-    #TODO implement modified subcat code
-    #NOTE: THE ABOVE CAN WAIT AS subcats are not in the ao3 workings, will be available for future use
-    #Message Values
-    ####################################
-    ##If true, send invites unconditionally,
-    # if false add them to the que to be sent when it gets to it, could be delayed.
-    @bypass_invite_que = true
-
-    #Send notification email with invitation to archive to imported users
-    @notify_imported_users = true
-
-    #Send message for each work imported? (or 1 message for all works)
-    @send_individual_messages = false
-
-    @new_user_email_id = 0
-    @existing_user_email_id = 0
-
-    @new_user_notice_id = 0
-    @existing_user_notice_id = 0
-
-    #New Collection Values
-    #####################################
-    #ID Of the newly created collection, filled with value automatically if create collection is true
-
-    @create_collection = true
-    @new_collection_id = 123456789
-    @new_collection_owner = "StephanieTest"
-    @new_collection_owner_pseud = "1010"
-    @new_collection_title = "The Quidditch Pitch Test"
-    @new_collection_name = "tqptest"
-    @new_collection_description = "The Quidditch Pitch Test"
-
-    #=========================================================
-    #Destination Options / Settings
-    #=========================================================
-    #bypass check to see if existing
-    @rerun_import = 0
-
-    @new_url = ""
-    @check_archivist_activated = 1
-
-    #Import categories as categories or use ao3 cats
-    @use_proper_categories = 0
-
-    #Destination otwarchive Ratings (1 being NR if NR Is conservative, 5 if not)
-    @target_rating_1 = 9 #not rated
-    @target_rating_2 = 10 #general
-    @target_rating_3 = 11 #Teen
-    @target_rating_4 = 12 #Mature
-    @target_rating_5 = 13 #Explicit
-
-    #========================
-    #Source Variables
-    #========================
-    "Old Archive URL"
-    @source_base_url = "http://thequidditchpitch.org"
-    #Source Archive Type
-    @source_archive_type = 3
-
-    #If archivetype being imported is efiction 3 >  then specify what class holds warning information
-    @source_warning_class_id = 1
-
-    #Holds Value for source table prefix
-    @source_table_prefix = "fanfiction_"
 
     ################# Self Defined based on above
     @source_ratings_table = nil #Source Ratings Table
@@ -154,38 +38,40 @@ class MassImportTool
     @source_author_query = nil #source author query
     @source_series_table = nil #Source Series Table
     @source_inseries_table = nil #Source inseries Table
-
-
-
   end
 
   ##################################################################################################
   # Main Worker Sub
   def import_data
     puts "1) Setting Import Values"
-    self.set_import_strings(@source_archive_type)
+    self.set_import_strings(@ais.source_archive_type)
     self.create_archivist_and_collection
     self.create_import_record
-    @import_files_path = "#{Rails.root.to_s}/imports/#{@archive_import_id}"
+    @import_files_path = "#{Rails.root.to_s}/imports/#{@ai.id}"
+
     puts "2) Running File Operations"
     run_file_operations
+
     puts "3) Updating Tags"
     source_archive_tag_list = Array.new()
+
     ## create list of all tags used in source
     source_archive_tag_list = get_tag_list(source_archive_tag_list)
+
     ## check for tag existance on target archive
     source_archive_tag_list = self.fill_tag_list(source_archive_tag_list)
 
+    puts "4) Importing Stories"
     ## pull source stories from database to array of rows
     r = @connection.query("SELECT * FROM #{@source_stories_table} ;")
-    puts "4) Importing Stories"
+
     i = 0
     r.each do |row|
       puts " Importing Story ID#{row[0]}"
       #Check to ensure work hasnt already been imported for this import run / archive
       #ignored if rerun_import  = 1
-      if @rerun_import == 0
-        temp_work_import = WorkImport.find_by_source_archive_id_and_source_work_id(@archive_import_id, row[0])
+      if @ais.rerun_import == 0
+        temp_work_import = WorkImport.find_by_source_archive_id_and_source_work_id(@ai.id, row[0])
         # if puts msg isnt important could use next if as done below when checking for presence of chapters
         if temp_work_import.empty? || temp_work_import == nil
           puts "##### Story Previously Imported For This Archive #####"
@@ -193,32 +79,33 @@ class MassImportTool
         end
       end
 
-      ns = ImportWork.new()
+      new_import_work = ImportWork.new()
       import_user = ImportUser.new()
 
       ## Create Taglisit for this story
-      ns.tag_list =  Array.new()
+      new_import_work.tag_list =  Array.new()
 
       ## assign data to import work object
-      ns = ImportWork.new
-      ns = assign_row_import_work(ns, row)
-      ns.tag_list
+      new_import_work = ImportWork.new
+      new_import_work = assign_row_import_work(new_import_work, row)
+      #new_import_work.tag_list
+      #todo looks like something is missing here
 
       ## goto next if no chapters
       num_source_chapters = 0
-      num_source_chapters = get_single_value_target("Select chapid  from #{@source_chapters_table} where sid = #{ns.old_work_id} limit 1")
+      num_source_chapters = get_single_value_target("Select chapid  from #{@source_chapters_table} where sid = #{new_import_work.old_work_id} limit 1")
       next if num_source_chapters == 0
 
       ## see if user / author exists for this import already
-      user_import = UserImport.find_by_source_user_id_and_source_archive(old_id,@archive_import_id)
+      user_import = UserImport.find_by_source_user_id_and_source_archive(old_id,@ai.id)
 
       if user_import != nil
-        ns.new_user_id = user_import.id
+        new_import_work.new_user_id = user_import.id
       end
       ## get import user object from source database
-      import_user = self.get_import_user_object_from_source(ns.old_user_id)
+      import_user = self.get_import_user_object_from_source(new_import_work.old_user_id)
       if user_import == nil
-        ns.new_user_id = 0
+        new_import_work.new_user_id = 0
         puts "user didnt exist in this import session"
         ## see if user account exists in main archive by checking email,
         temp_user_object = User.find_by_email(import_user.email)
@@ -227,69 +114,72 @@ class MassImportTool
           ## if not exist , add new user with user object, passing old author object
           import_user = ImportUser.new
           import_user = self.add_user(import_user)
-          ## pass values to new story object
-          ns.penname = import_user.penname
-          ns.new_user_id = import_user.new_user_id
-          ## debug info
-          puts "newid = #{import_user.new_user_id}"
-          ## get newly created pseud id
-          new_pseud_id = get_default_pseud_id(ns.new_user_id)
-          ## set the penname on newly created pseud to proper value
-          update_record_target("update pseuds set name = '#{ns.penname}' where id = #{new_pseud_id}")
-          ## create user import
 
+          ## pass values to new story object
+          new_import_work.penname = import_user.penname
+          new_import_work.new_user_id = import_user.new_user_id
+
+          ## get newly created pseud id
+          new_pseud_id = get_default_pseud_id(new_import_work.new_user_id)
+
+          ## set the penname on newly created pseud to proper value
+          update_record_target("update pseuds set name = '#{new_import_work.penname}' where id = #{new_pseud_id}")
 
           #create_user_import(import_user.new_user_id, new_pseud_id, ns.old_user_id, @archive_import_id)
-          ns.new_pseud_id = new_pseud_id
+          new_import_work.new_pseud_id = new_pseud_id
         else
           ## user exists, but is being imported
           ## insert the mapping value
           puts "Debug: User existed in Target Archive"
-          ns.penname = import_user.penname
+          new_import_work.penname = import_user.penname
+
           ## check to see if penname exists as pseud for existing user
-          temp_pseud_object = Pseud.find_by_user_id_and_name(temp_user_object.id,ns.penname)
+          temp_pseud_object = Pseud.find_by_user_id_and_name(temp_user_object.id,new_import_work.penname)
           #temp_pseud_id = get_pseud_id_for_penname(temp_author_object.id, ns.penname)
+
           if temp_pseud_object == nil
+
             ## add pseud if not exist
             temp_pseud_object = create_new_pseud(temp_user_object.id, import_user.penname, true, "Imported")
-            ns.new_pseud_id = temp_pseud_object.id
+            new_import_work.new_pseud_id = temp_pseud_object.id
+
             ## create USER IMPORT
-            create_user_import(temp_user_object.id, temp_pseud_object.id, ns.old_user_id, @archive_import_id)
+            create_user_import(temp_user_object.id, temp_pseud_object.id, new_import_work.old_user_id, @ai.id)
             # 'temp_pseud_id = get_pseud_id_for_penname(ns.new_user_id,ns.penname)
             #todo edit out
-            update_record_target("update user_imports set pseud_id = #{temp_pseud_object.id} where user_id = #{ns.new_user_id} and source_archive_id = #{@archive_import_id}")
-            ns.new_user_id = temp_pseud_object.id
+            update_record_target("update user_imports set pseud_id = #{temp_pseud_object.id} where user_id = #{new_import_work.new_user_id} and source_archive_id = #{@ai.id}")
+            new_import_work.new_user_id = temp_pseud_object.id
             import_user.pseud_id = temp_pseud_object.id
           end
         end
       else
-        ns.penname = import_user.penname
+        new_import_work.penname = import_user.penname
         #TODO  CONVERT TO AR , CAN BE GOTTEN BEFORE POSSIBLY?
-        import_user.pseud_id = get_pseud_id_for_penname(ns.new_user_id, ns.penname)
+        import_user.pseud_id = get_pseud_id_for_penname(new_import_work.new_user_id, new_import_work.penname)
         puts "#{import_user.pseud_id} this is the matching pseud id"
-        ns.new_pseud_id = import_user.pseud_id
+        new_import_work.new_pseud_id = import_user.pseud_id
       end
       ## insert work object
-      new_work = prepare_work(ns)
+      new_work = prepare_work(new_import_work)
       # todo investigate why i was checking length < 5 , steph
       next if new_work.chapters[0].content.length < 5
       new_work.save!
-      add_chapters(new_work, ns.old_work_id, false)
+      add_chapters(new_work, new_import_work.old_work_id, false)
 
       ## add all chapters to work
       new_work.expected_number_of_chapters = new_work.chapters.count
       new_work.save
 
-      puts "Taglist count = #{ns.tag_list.count}"
-      ns.tag_list.each do |t|
+      puts "Taglist count = #{new_import_work.tag_list.count}"
+      new_import_work.tag_list.each do |t|
         add_work_taggings(new_work.id, t)
       end
 
       ## save first chapter reviews since cand do it in addchapters like rest
-      old_first_chapter_id = get_single_value_target("Select chapid from  #{@source_chapters_table} where sid = #{ns.old_work_id} order by inorder asc Limit 1")
+      old_first_chapter_id = get_single_value_target("Select chapid from  #{@source_chapters_table} where sid = #{new_import_work.old_work_id} order by inorder asc Limit 1")
       import_chapter_reviews(old_first_chapter_id, new_work.chapters.first.id)
 
-      create_new_work_import(new_work, ns, @archive_import_id)
+      create_new_work_import(new_work, new_import_work, @ai.id)
       format_chapters(new_work.id)
       i = i + 1
     end
@@ -310,16 +200,12 @@ class MassImportTool
   def add_work_taggings(work_id, new_tag)
     begin
       my_tagging = Tagging.new
+      #Tagging will be of work type so go ahead and set it so
       my_tagging.taggable_type="Work"
-
-      puts "looking for tag with name #{new_tag.tag}"
-      temp_tag = Tag.new
       temp_tag = Tag.find_by_name(new_tag.tag)
       unless temp_tag.name == nil
-        puts "found tag with name #{temp_tag.name} and id #{temp_tag.id}"
         my_tagging.taggable_id = work_id
         my_tagging.tagger = temp_tag
-
         my_tagging.save!
       end
     rescue Exception => ex
@@ -346,7 +232,7 @@ class MassImportTool
         if !temp_tag.tag_type == "Category" || 99
           temp_new_tag.type = "#{temp_tag.tag_type}"
         else
-          if @categories_as_tags == 1
+          if @ais.categories_as_tags == 1
             temp_new_tag.type = "Freeform"
           end
         end
@@ -362,11 +248,6 @@ class MassImportTool
   end
 
 
-
-  ##############################################################
-  ## collections
-  ##############################################################
-
   ####Reserved####
   ##gets the collections that the work is supposed to be in based on old cat id's
   ##note: until notice, this function will not be used.
@@ -375,22 +256,13 @@ class MassImportTool
     temp_array = Array.new
     collection_string = temp_string.split(",")
     collection_string.each do |c|
-      new_collection_id = get_single_value_target("Select new_id from collection_imports where source_archive_id = #{@archive_import_id} AND old_id = #{c} ")
+      new_collection_id = get_single_value_target("Select new_id from collection_imports where source_archive_id = #{@ai.id} AND old_id = #{c} ")
       temp_collection = Collection.find(new_collection_id)
       temp_array.push(temp_collection)
     end
     #collection_string = temp_array
     return temp_array
   end
-
-
-
-
-
-  ##############################################################
-  ## Users
-  ##############################################################
-
 
 
   #Add User, takes ImportUser
@@ -400,7 +272,7 @@ class MassImportTool
       email_array = import_user.email.split("@")
       login_temp = email_array[0] #take first part of email
       login_temp = login_temp.tr(".", "") # remove any dots
-      login_temp = "i#{@archive_import_id}#{login_temp}" #prepend archive id
+      login_temp = "i#{@ai.id}#{login_temp}" #prepend archive id
       new_user = User.new()
       new_user.terms_of_service = "1"
       new_user.email = import_user.email
@@ -410,7 +282,7 @@ class MassImportTool
       new_user.password_confirmation = import_user.password
       new_user.age_over_13 = "1"
       new_user.save!
-                                  ##Create Default Pseud / Profile
+       ##Create Default Pseud / Profile
       new_user.create_default_associateds
       import_user.new_user_id = new_user.id
       return import_user
@@ -471,14 +343,14 @@ class MassImportTool
 
     puts "revised = #{new_work.revised_at}"
     puts "crated at  = #{new_work.created_at}"
-    new_work.fandom_string = @import_fandom
+    new_work.fandom_string = @ai.import_fandom
 
     #todo finish rating code assignment, steph, 9-15-2013
     new_work.rating_string = "Not Rated"
     new_work.warning_strings = "None"
     puts "old work id = #{import_work.old_work_id}"
     #todo - see if there is a better way other then setting the value here, may be redundant, steph 9-15-2013
-    new_work.imported_from_url = "#{@archive_import_id}~~#{import_work.old_work_id}"
+    new_work.imported_from_url = "#{@id.id}~~#{import_work.old_work_id}"
 
     new_work.language = @default_language
     new_work = add_chapters(new_work, import_work.old_work_id, true)
@@ -561,7 +433,7 @@ class MassImportTool
       u.roles << Role.find_by_name("archivist")
       u.save
     end
-    @archivist_user_id = u.id
+    @ai.archivist_user_id = u.id
     if @ais.check_archivist_activated == 1
       unless u.activated_at
         u.activate
@@ -584,24 +456,14 @@ class MassImportTool
     c.save
     ## return the collection id to class instance variable
     @ai.associated_collection_id = c.id
+
     puts "Archivist #{u.login} set up and owns collection #{c.name}."
-=begin
-    if @categories_as_sub_collections
-      puts "Creating sub collections"
-      @ih.convert_categories_to_collections(0)
-    end
-=end
   end
-
-  ##############################################################
-  ## Chapters
-  ##############################################################
-
 
   #Function to return row count due to multi adapter
   def get_row_count(row_set)
     count_value = nil
-    if @ais == 0
+    if @ais.use_new_mysql == 0
       count_value = row_set.num_rows
     else
       count_value = row_set.count
@@ -615,9 +477,7 @@ class MassImportTool
   # @param [integer] new_chapter_id
   def import_chapter_reviews(old_chapter_id, new_chapter_id)
     r = @connection.query("Select reviewer, uid,review,date,rating from #{@source_reviews_table} where chapid=#{old_chapter_id}")
-
     count_value = get_row_count(r)
-
     #only run if we have reviews
     if count_value >=1
       r.each do |row|
@@ -692,8 +552,6 @@ class MassImportTool
               c.position = position_holder
             end
             c.title = rr[1]
-            #c.created_at  = rr[4]
-            #c.updated_at = rr[4]
             ic = Iconv.new('UTF-8//IGNORE', 'UTF-8')
             valid_string = ic.iconv(rr[4] + ' ')[0..-2]
             c.content = valid_string
@@ -778,25 +636,22 @@ class MassImportTool
 
   #create import record
   # @return [integer]  import archive id
-  def create_import_record
+  def create_import_record(import_name,source_archive_type,source_base_url,new_collection_id,new_url,archivist_user_id)
+    #changed to take all values as params 9-27 , probably isnt even needed at all since should be idealy called before class init
     # done- 9-18-2013 - update to use ar new method and save since is proper ar class now, make sure it returns new value after save - steph 9-9-13
     #update_record_target("insert into archive_imports (name,archive_type_id,old_base_url,associated_collection_id,new_user_notice_id,existing_user_notice_id,existing_user_email_id,new_user_email_id,new_url,archivist_user_id)  values ('#{@import_name}',#{@source_archive_type},'#{
     #@source_base_url}',#{@new_collection_id},#{@new_user_notice_id},#{@existing_user_notice_id},#{@new_user_email_id},#{@existing_user_email_id},'#{@new_url}',#{@archivist_user_id})")
     begin
       archive_import = ArchiveImport.new
-      archive_import.name = @import_name
-      archive_import.archive_type_id = @source_archive_type
-      archive_import.old_base_url = @source_base_url
-      archive_import.associated_collection_id = @new_collection_id
-      archive_import.new_user_notice_id = @new_user_notice_id
-      archive_import.new_user_email_id = @new_user_email_id
-      archive_import.existing_user_email_id = @existing_user_email_id
-      archive_import.existing_user_notice_id = @existing_user_notice_id
-      archive_import.new_url = @new_url
-      archive_import.archivist_user_id = @archivist_user_id
+      archive_import.name = import_name
+      archive_import.archive_type_id = source_archive_type
+      archive_import.old_base_url = source_base_url
+      archive_import.associated_collection_id = new_collection_id
+      archive_import.new_url = new_url
+      archive_import.archivist_user_id = archivist_user_id
       archive_import.save!
       puts "record created"
-      new_record = ArchiveImport.find_by_old_base_url(@source_base_url)
+      new_record = ArchiveImport.find_by_old_base_url(source_base_url)
 
       return new_record.id
     rescue Exception => ex
@@ -921,37 +776,6 @@ class MassImportTool
     return get_single_value_target("select id from pseuds where user_id = #{user_id} and name = '#{penname}'")
   end
 
-=begin
-  def get_new_work_id_fresh(source_work_id, source_archive_id)
-    puts "13-#{source_work_id}~~#{source_archive_id}"
-
-    return get_single_value_target("select id from works where imported_from_url = '#{source_work_id}~~#{source_archive_id}'")
-  end
-=end
-
-=begin
-  # Return new story id given old id and archive
-  #updated to use ar 9-23-2013
-  def get_new_work_id_from_old_id(source_archive_id, old_work_id) #
-    puts "12-#{source_archive_id}-#{old_work_id}"
-    work_import = WorkImport.find_by_old_wok_id_and_source_archive_id(old_work_id, source_archive_id)
-    return work_import.work_id
-    #return get_single_value_target(" select work_id from work_imports where source_archive_id #{source_archive_id} and old_work_id=#{old_work_id}")
-  end
-
-  # Get New Author ID from old User ID & old archive ID
-  def get_new_author_id_from_old(old_archive_id, old_user_id)
-    user_import = UserImport.find_by_old_user_id_and_source_archive_id(old_user_id,old_archive_id)
-    return user_import.user_id
-    #return get_single_value_target(" Select user_id from user_imports where source_archive_id = #{old_archive_id} and source_user_id = #{old_user_id} ")
-  end
-
-  #check for existing user by email address, returns id
-  def get_user_id_from_email(emailaddress)
-    return get_single_value_target("select id from users where email = '#{emailaddress}'")
-  end
-=end
-
   # Updated to be able to use multiple gems
   #query and return a single value from database
   # @param [string] query
@@ -1005,96 +829,195 @@ class MassImportTool
     ensure
     end
   end
+  ##get import user object, by source_user_id,
+  ##return import user object
+  # @param [integer]  source_user_id
+  # @return [ImportUser]  ImportUser Object
+  def get_import_user_object_from_source(source_user_id)
+    a = ImportUser.new()
+    r = @connection.query("#{@source_author_query} #{source_user_id}")
+    @connection
 
-#take the settings from the form and pass them into the internal instance specific variables
-#for the mass import object.
-  def populate(settings)
-    ## database values
-    @source_database_host = settings[:source_database_host]
-    @source_database_name = settings[:source_database_name]
-    @source_database_password = settings[:source_database_password]
-    @source_database_username = settings[:source_database_username]
-    @source_table_prefix = settings[:source_table_prefix]
-    ## define temp value for temp appended prefix for table names
-    @source_temp_table_prefix = "ODimport"
-    if !settings[:source_temp_table_prefix] == nil
-      @source_temp_table_prefix = settings[:source_temp_table_prefix]
+    r.each do |row|
+      a.old_user_id = source_user_id
+      a.realname = row[0]
+      a.source_archive_id = @ai.id
+      a.penname = row[1]
+      a.email = row[2]
+      a.bio = row[3]
+      a.joindate = row[4]
+      a.password = row[5]
+      if @ais.source_archive_type == 2 || @ais.source_archive_type == 4
+        a.website = row[6]
+        a.aol = row[7]
+        a.msn = row[8]
+        a.icq = row[9]
+        a.bio = self.build_bio(a).bio
+        a.yahoo = ""
+        if @ais.source_archive_type == 2
+          a.yahoo = row[10]
+          a.is_adult = row[11]
+        end
+      end
     end
-    ## archivist values
-    @archivist_email = settings[:archivist_email]
-    @archivist_login = settings[:archivist_username]
-    @archivist_password = settings[:archivist_password]
-    ## import values
-    @import_fandom = settings[:import_fandom]
-    @import_name = settings[:import_name]
-    @import_id = settings[:import_id]
-    @import_reviews = settings[:import_reviews]
-    @categories_as_sub_collections = settings[:categories_as_sub_collections]
-    ## collection values
-    @create_collection = settings[:create_collection]
-    @new_collection_description = settings[:new_collection_description]
-    @new_collection_id = settings[:new_collection_id]
-    @new_collection_name = settings[:new_collection_short_name]
-    @new_collection_owner = settings[:new_collection_owner]
-    @new_collection_title = settings[:new_collection_title]
-    @new_collection_restricted = settings[:new_collection_restricted]
-    ## notification values
-    @new_notification_message = settings[:new_message]
-    @existing_notification_message = settings[:existing_message]
+    return a
+  end
 
-    case settings[:archive_type]
-      when "efiction3"
-        @source_archive_type = 3
-      when "storyline18"
-        @source_archive_type = 4
-      when "efiction1"
-        @source_archive_type = 1
-      when "efiction2"
-        @source_archive_type = 2
-      when "otwarchive"
-        @source_archive_type = 5
+  ####
+  #used with efiction 3 archives to get values to be gotten as tags
+  # @param [array] tl import tag array
+  # @param [string] class_str
+  # @param [string]  my_type tag type
+  def get_source_work_tags(tl, class_str, my_type)
+    query = ""
+    new_tag_type = ""
+    class_string = String.new(str=class_str)
+    class_split = Array.new
+    class_split = class_string.split(",")
+    class_split.each do |x|
+      case my_type
+        when "characters"
+          new_tag_type = "Character"
+          query = "Select charid, charname from #{@source_characters_table} where charid = #{x}"
+        when "classes"
+          query = "Select class_id,  class_name, class_type from #{@source_classes_table} where class_id = #{x}"
+          new_tag_type = "Freeform"
+        when "categories"
+          new_tag_type = "Freeform"
+          query = "Select catid, category, parentcatid from #{@source_categories_table} where catid = #{x}"
+        # Todo: add @use_warning_tags as an option (for future use, non ao3) ,Steph
+        # when "warning"
+        #   new_tag_type = "Warning"
 
+        else
+          puts "Error: (get_source_work_tags): Invalid tag  type"
+      end
+      r = @connection.query(query)
+      r.each do |row|
+        nt = ImportTag.new()
+        nt.tag_type= new_tag_type
+        nt.old_id = row[0]
+        nt.tag = row[1]
+        tl.push(nt)
+      end
     end
+    return tl
+  end
 
-    ## Overrides for abnormal / non-typical imports (advanced use only)
-    if settings[:override_tables] == 1
-      @source_users_table = settings[:source_users_table]
-      @source_chapters_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_chapters_table]}"
-      @source_reviews_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_reviews_table]}"
-      @source_stories_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_stories_table]}"
-      @source_users_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_users_table]}"
-      @source_categories_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_category_table]}"
-      @source_subcategories_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_subcategory_table]}"
-      @source_ratings_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_ratings_table]}"
-      @source_classes_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_classes_table]}"
-      @source_class_types_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_class_types_table]}"
-      @source_warnings_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_warnings_table]}"
-      @source_characters_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_characters_table]}"
-      @source_challenges_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_challenges_table]}"
-      @source_collections_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_collections_table]}"
-      @source_hitcount_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_hitcount_table]}"
-      @source_user_preferences_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_user_preferences_table]}"
-      @source_user_profile_fields_table ="#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_user_profiles_fields_table]}"
-      @source_user_profile_values_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_user_profiles_values_table]}"
-      @source_user_profiles_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_user_profiles_table]}"
-      @source_pseuds_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_pseuds_table]}"
-      @source_collection_items_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_collection_items_table]}"
-      @source_collection_participants_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_collection_participants]}"
-      ## other possible source tables to be added here
+  #assign row data to import_Work object
+  # @param [import_work] new_work_import
+  # @param [mysql_row] row
+  def assign_row_import_work(new_work_import, row)
+    new_work_import.source_archive_id = @ai.id
 
-    end
-    if settings[:override_target_ratings] == 1
-      @target_rating_1 = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_target_rating_1]}" #NR
-      @target_rating_2 = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_target_rating_2]}" #general audiences
-      @target_rating_3 = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_target_rating_3]}" #teen
-      @target_rating_4 = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_target_rating_4]}" #Mature
-      @target_rating_5 = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_target_rating_5]}" #Explicit
-    end
-    ## initialize database connection object
-    if @connection == nil
-      Mysql2::Client.new(:host => @source_database_host, :username => @source_database_username, :password => @source_database_password, :database => @source_database_name)
-    end
+    case @source_archive_type
+      when 4 ## storyline
+        new_work_import.old_work_id = row[0]
+        #puts ns.old_work_id
+        new_work_import.title = row[1]
+        #debug info
+        #puts ns.title
+        new_work_import.summary = row[2]
+        new_work_import.old_user_id = row[3]
+        new_work_import.rating_integer = row[4]
+        #Assign Tags
+        rating_tag = ImportTag.new()
+        rating_tag.tag_type = "Freeform"
+        rating_tag.new_id = new_work_import.rating_integer
+        new_work_import.tag_list.push(rating_tag)
+        new_work_import.published = row[5]
+        cattag = ImportTag.new()
+        subcattag = ImportTag.new()
+        subcattag.tag_type = "Freeform"
+        cattag.tag_type = "Freeform"
+        cattag.new_id = row[6]
+        subcattag.new_id =row[11]
+        new_work_import.tag_list.push(cattag)
+        new_work_import.tag_list.push(subcattag)
+        new_work_import.updated = row[9]
+        new_work_import.completed = row[12]
+        new_work_import.hits = row[10]
 
+      when 3 ## efiction 3
+        new_work_import.old_work_id = row[0]
+        new_work_import.title = row[1]
+        new_work_import.summary = row[2]
+        new_work_import.old_user_id = row[10]
+        new_work_import.classes = row[5]
+        new_work_import.categories = row[4]
+        new_work_import.characters = row[6]
+        new_work_import.rating_integer = row[7]
+        rating_tag = ImportTag.new()
+        rating_tag.tag_type = "Freeform"
+        rating_tag.new_id = new_work_import.rating_integer
+        new_work_import.tag_list.push(rating_tag)
+        new_work_import.published = row[8]
+        new_work_import.updated = row[9]
+        new_work_import.completed = row[14]
+        new_work_import.hits = row[18]
+        if !@ais.source_warning_class_id == nil
+          #todo why did you have this here? steph 9-9-13
+        end
+        ## fill taglist with import tags to be added
+        new_work_import.tag_list = get_source_work_tags(new_work_import.tag_list, new_work_import.classes, "classes")
+        puts "Getting class tags: tag count = #{new_work_import.tag_list.count}"
+        new_work_import.tag_list = get_source_work_tags(new_work_import.tag_list, new_work_import.characters, "characters")
+        if @ais.categories_as_tags == 1
+          new_work_import.tag_list = get_source_work_tags(new_work_import.tag_list, new_work_import.categories, "categories")
+          puts "Getting category tags: tag count = #{new_work_import.tag_list.count}"
+        end
+      else
+        puts "Error: (assign_row_import_work): Invalid source archive type, or type not yet Implemented."
+    end
+    return new_work_import
+  end
+
+  #get all possible tags from source
+  # @param [array]  tl
+  def get_tag_list(tl)
+    tag_list = tl
+    case @source_archive_type
+      when 4 ## storyline
+             ## Categories
+        tag_list = get_tag_list_helper("Select caid, caname from #{@source_categories_table}; ", "Category", tag_list)
+        tag_list = get_tag_list_helper("Select subid, subname from #{@source_subcategories_table}; ", 99, tag_list)
+      when 3 ## efiction 3
+             ## classes
+        tag_list = get_tag_list_helper("Select class_id, class_type, class_name from #{@source_classes_table}; ", "Freeform", tag_list)
+        ## categories
+        tag_list = get_tag_list_helper("Select catid, category from #{@source_categories_table}; ", "Freeform", tag_list)
+        ## characters
+        tag_list = get_tag_list_helper("Select charid, charname from #{@source_characters_table}; ", "Character", tag_list)
+
+      when 2 ## efiction 2
+             ## categories
+        tag_list = get_tag_list_helper("Select catid, category from #{@source_categories_table}; ", "Freeform", tag_list)
+        ## characters
+        tag_list = get_tag_list_helper("Select charid, charname from #{@source_characters_table}; ", "Character", tag_list)
+      else
+        puts "Error: (get_tag_list): Invalid or source archive type, or type not currently implemented"
+    end
+    return tag_list
+  end
+
+  #helper function for get tag list, takes query, tagtype as string, taglist array of import tag
+  # @param [string] query
+  # @param [string] tag_type
+  # @param [array] tl
+  def get_tag_list_helper(query, tag_type, tl)
+    ## categories
+    r = @connection.query(query)
+    count_value = get_row_count(r)
+    puts "row count!!!!!!!!!!!!!! #{count_value}"
+    r.each do |row|
+      nt = ImportTag.new()
+      nt.tag_type = tag_type
+      nt.old_id = row[0]
+      nt.tag = row[1]
+      tl.push(nt)
+      puts "tag testing" + nt.tag
+    end
+    return tl
   end
 
   #file operations
@@ -1109,14 +1032,14 @@ class MassImportTool
   #move uploaded files, unzip them, transform the sql file, save it, execute it
   def run_file_operations
     check_create_dir(@import_files_path)
-    `mv /tmp/#{@sql_filename} #{@import_files_path}`
-    `unzip #{@import_files_path}/#{@sql_filename} -d #{@import_files_path}`
+    `mv /tmp/#{@ais.sql_filename} #{@import_files_path}`
+    `unzip #{@import_files_path}/#{@ais.sql_filename} -d #{@import_files_path}`
     transform_source_sql()
     load_source_db()
     begin
       if @archive_has_chapter_files
-        `mv /tmp/#{@archive_chapters_filename} #{@import_files_path}`
-        `unzip #{@import_files_path}/#{@archive_chapters_filename} -d #{@import_files_path}`
+        `mv /tmp/#{@ais.archive_chapters_filename} #{@import_files_path}`
+        `unzip #{@import_files_path}/#{@ais.archive_chapters_filename} -d #{@import_files_path}`
         #add the content to the chapters in the database
         update_source_chapters
       end
@@ -1202,114 +1125,18 @@ class MassImportTool
 
   #process source db sql file and save
   def transform_source_sql
-    sql_file = read_file_to_string("#{@import_files_path}/#{@sql_filename}")
+    sql_file = read_file_to_string("#{@import_files_path}/#{@ais.sql_filename}")
     ic = Iconv.new('UTF-8//IGNORE', 'UTF-8')
     valid_string = ic.iconv(sql_file + ' ')[0..-2]
     sql_file = valid_string
     sql_file = sql_file.gsub("TYPE=MyISAM", "")
-    sql_file = sql_file.gsub(@source_table_prefix, "#{@source_temp_table_prefix}#{@source_table_prefix}")
+    sql_file = sql_file.gsub(@ais.source_table_prefix, "#{@ais.source_temp_table_prefix}#{@ais.source_table_prefix}")
     save_string_to_file(sql_file, "#{@import_files_path}/data_clean.sql")
   end
 
   #load cleaned source db file into mysql
   def load_source_db
-    `mysql -u #{@source_database_username} -p#{@source_database_password} #{@source_database_name} < #{@import_files_path}/data_clean.sql`
+    `mysql -u #{@ais.source_database_username} -p#{@ais.source_database_password} #{@ais.source_database_name} < #{@import_files_path}/data_clean.sql`
   end
-
-
-=begin
-
-  #Post Chapters Fix
-  def post_chapters2(c, sourceType)
-    begin
-      case sourceType
-        when 4 #storyline
-          new_c = Chapter.new
-          new_c.work_id = c.new_work_id
-          new_c.created_at = c.date_posted
-          new_c.updated_at = c.date_posted
-          new_c.posted = 1
-          new_c.position = c.position
-          new_c.title = c.title
-          new_c.summary = c.summary
-          new_c.content = c.body
-          new_c.save!
-          puts "New chapter id #{new_c.id}"
-          add_new_creatorship(new_c.id, "Chapter", c.pseud_id)
-        when 3 #efiction
-          new_c = Chapter.new
-          new_c.work_id = c.new_work_id
-          new_c.created_at = c.date_posted
-          new_c.updated_at = c.date_posted
-          new_c.posted = 1
-          new_c.position = c.position
-          new_c.title = c.title
-          new_c.summary = c.summary
-          new_c.content = c.body
-          new_c.save!
-          add_new_creatorship(new_c.id, "Chapter", c.pseud_id)
-
-      end
-    rescue Exception => ex
-      puts "error in post chapters 2 #{ex}"
-    end
-
-  end
-=end
-=begin
-
-
-  def add_chapters2(ns, new_id, old_id)
-    query = ""
-    begin
-      case @source_archive_type
-        when 4
-          puts "1121 == Select * from #{@source_chapters_table} where csid = #{old_id} order by id asc"
-          query = "Select * from #{@source_chapters_table} where csid = #{old_id}"
-          r = @connection.query(query)
-          puts "333"
-
-          ix = 1
-          r.each do |rr|
-            c = ImportChapter.new()
-            c.new_work_id = new_id
-
-            c.title = rr[1]
-            c.date_posted = rr[4]
-            c.body = rr[3]
-            c.position = ix
-            self.post_chapters2(c, @source_archive_type)
-          end
-        when 3
-          query="Select chapid,title,inorder,notes,storytext,endnotes,sid,uid from #{@source_chapters_table} where sid = #{old_id}"
-          puts query
-          r = @connection.query(query)
-          puts "333 #{r.count}"
-
-          r.each do |rr|
-            c = ImportChapter.new()
-            #c.new_work_id = ns.new_work_id     will be made automatically
-            #c.pseud_id = ns.pseuds[0]
-            c.title = rr[1]
-            #c.created_at  = rr[4]
-            #c.updated_at = rr[4]
-            c.body = rr[4]
-            c.position = rr[2]
-            c.summary = rr[3]
-
-            #ns.chapters << c
-            self.post_chapters2(c, @source_archive_type)
-          end
-
-
-      end
-    rescue Exception => ex
-      puts " Error : " + ex.message
-      puts "query = #{query}"
-
-
-    end
-  end
-=end
 
 end
