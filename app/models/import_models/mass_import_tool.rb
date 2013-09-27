@@ -13,7 +13,7 @@ class MassImportTool
     @ai = ArchiveImport.new
 
     @ih = ImportHelper.new
-    @ais = ArchiveImportSettings.
+    @ais = ArchiveImportSettings
     @use_new_mysql = 0
     #################################################
     #Database Settings

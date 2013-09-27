@@ -35,7 +35,7 @@ class AddArchiveImportDetails
       t.string  :archivist_email
 
     end
-
+   end
 
 
   def down
