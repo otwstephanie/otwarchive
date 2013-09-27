@@ -1,5 +1,5 @@
-class AddArchiveImportDetails
-  def up
+class AddArchiveImportDetails < ActiveRecord::Migration
+  def self.up
     create_table :archive_import_settings do |t|
       t.integer  :archive_import_id
       t.integer  :archivist_user_id
@@ -38,7 +38,7 @@ class AddArchiveImportDetails
    end
 
 
-  def down
+  def self.down
     drop_table :archive_import_settings
   end
 end
