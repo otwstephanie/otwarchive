@@ -1,5 +1,7 @@
 Otwarchive::Application.routes.draw do
   
+  use_doorkeeper
+
   #### ERRORS ####
   
   match '/403', :to => 'errors#403'

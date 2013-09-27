@@ -94,6 +94,9 @@ GEM
     docile (1.1.1)
     domain_name (0.5.12)
       unf (>= 0.0.5, < 1.0.0)
+    doorkeeper (0.7.2)
+      jquery-rails (>= 2.0.2)
+      railties (>= 3.1)
     erubis (2.7.0)
     escape_utils (0.3.2)
     ethon (0.6.2)
@@ -314,6 +317,7 @@ DEPENDENCIES
   cucumber-rails
   database_cleaner
   delorean
+  doorkeeper (~> 0.7.2)
   escape_utils
   factory_girl
   faker
