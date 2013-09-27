@@ -52,7 +52,7 @@ class ImportHelper
         ns.published = row[5]
         cattag = ImportTag.new()
         subcattag = ImportTag.new()
-        if @use_proper_categories
+        if @use_proper_categories == 1
           cattag.tag_type = Category
           subcattag.tag_type = "Category"
         else
@@ -91,7 +91,7 @@ class ImportHelper
         ns.tag_list = get_source_work_tags(ns.tag_list, ns.classes, "classes")
         puts "Getting class tags: tag count = #{ns.tag_list.count}"
         ns.tag_list = get_source_work_tags(ns.tag_list, ns.characters, "characters")
-        if @categories_as_tags
+        if @categories_as_tags == 1
           ns.tag_list = get_source_work_tags(ns.tag_list, ns.categories, "categories")
           puts "Getting category tags: tag count = #{ns.tag_list.count}"
         end

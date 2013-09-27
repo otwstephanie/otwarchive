@@ -10,26 +10,28 @@ class MassImportTool
   def initialize
     #Import Class Version Number
     @version = 1
-    @ih = ImportHelper.new
+    @ai = ArchiveImport.new
 
+    @ih = ImportHelper.new
+    @ais = ArchiveImportSettings.
     @use_new_mysql = 0
     #################################################
     #Database Settings
     ###############################################
     @sql_filename = "rescued_archive.sql"
-    @database_host = "localhost"
-    @database_username = "stephanies"
-    @database_password = "Trustno1"
-    @database_name = "stephanies_development"
-    @temp_table_prefix = "testing"
-    @apply_temp_prefix = 1
+    @source_database_host = "localhost"
+    @source_database_username = "stephanies"
+    @source_database_password = "Trustno1"
+    @source_database_name = "stephanies_development"
+    @source_temp_table_prefix = "testing"
+    @apply_temp_table_prefix = 1
 
     #TODO NOTE! change to nil for final version, as there will be no default
     @connection = nil
     if @use_new_mysql == 0 then
-      @connection = Mysql.new(@database_host, @database_username, @database_password, @database_name)
+      @connection = Mysql.new(@source_database_host, @source_database_username, @source_database_password, @source_database_name)
     else
-      @connection = Mysql2::Client.new(:host => @database_host, :username => @database_username, :password => @database_password, :database => @database_name)
+      @connection = Mysql2::Client.new(:host => @source_database_host, :username => @source_database_username, :password => @source_database_password, :database => @source_database_name)
     end
 
 
@@ -52,7 +54,7 @@ class MassImportTool
     @import_fandom = "Harry Potter"
 
     #Create record for imported archive (false if already exists)
-    @create_archive_import_record = true
+    @create_archive_import_record = 1
 
     #will error if not unique, just let it automatically create it and assign it if you are unsure
     #Import Archive ID
@@ -62,16 +64,16 @@ class MassImportTool
     @default_language = Language.find_by_short("en")
 
     #Import Reviews (true / false)
-    @import_reviews = false
+    @import_reviews = 0
 
     #Match Existing Authors by Email-Address
-    @match_existing_authors = true
+    @match_existing_authors = 0
 
     #category mapping
     #================
     @categories_as_sub_collections = false
     #Categories as sub-collections isn't supported at Ao3, left for later use by other archives
-    @categories_as_tags = true
+    @categories_as_tags = 0
     @subcategory_depth = 1
     #values "merge_top" "move_top" "drop" "merge all" "custom"
     @subcategory_remap_method = "merge_top"
@@ -114,12 +116,10 @@ class MassImportTool
     @rerun_import = 0
 
     @new_url = ""
-    @check_archivist_activated = true
-    #If using ao3 cats, sort or skip
-    @SortForAo3Categories = true
+    @check_archivist_activated = 1
 
     #Import categories as categories or use ao3 cats
-    @use_proper_categories = false
+    @use_proper_categories = 0
 
     #Destination otwarchive Ratings (1 being NR if NR Is conservative, 5 if not)
     @target_rating_1 = 9 #not rated
@@ -155,11 +155,8 @@ class MassImportTool
     @source_series_table = nil #Source Series Table
     @source_inseries_table = nil #Source inseries Table
 
-    #############
-    #debug stuff
-    @debug_update_source_tags = true
-    #Skip Rating Transformation (ie if import in progress or testing)
-    @skip_rating_transform = false
+
+
   end
 
   ##################################################################################################
@@ -349,7 +346,7 @@ class MassImportTool
         if !temp_tag.tag_type == "Category" || 99
           temp_new_tag.type = "#{temp_tag.tag_type}"
         else
-          if @categories_as_tags
+          if @categories_as_tags == 1
             temp_new_tag.type = "Freeform"
           end
         end
@@ -565,7 +562,7 @@ class MassImportTool
       u.save
     end
     @archivist_user_id = u.id
-    if @check_archivist_activated
+    if @check_archivist_activated == 1
       unless u.activated_at
         u.activate
       end
@@ -852,54 +849,54 @@ class MassImportTool
   def set_import_strings(source_archive_type)
     case source_archive_type
       when 1 ## efiction 1
-        @source_chapters_table = "#{@temp_table_prefix}#{@source_table_prefix}chapters"
-        @source_reviews_table = "#{@temp_table_prefix}#{@source_table_prefix}reviews"
-        @source_stories_table = "#{@temp_table_prefix}#{@source_table_prefix}stories"
-        @source_categories_table = "#{@temp_table_prefix}#{@source_table_prefix}categories"
-        @source_users_table = "#{@temp_table_prefix}#{@source_table_prefix}authors"
-        @source_characters_table = "#{@temp_table_prefix}#{@source_table_prefix}characters"
-        @source_warnings_table = "#{@temp_table_prefix}#{@source_table_prefix}warnings"
-        @source_generes_table = "#{@temp_table_prefix}#{@source_table_prefix}generes"
+        @source_chapters_table = "#{@source_temp_table_prefix}#{@source_table_prefix}chapters"
+        @source_reviews_table = "#{@source_temp_table_prefix}#{@source_table_prefix}reviews"
+        @source_stories_table = "#{@source_temp_table_prefix}#{@source_table_prefix}stories"
+        @source_categories_table = "#{@source_temp_table_prefix}#{@source_table_prefix}categories"
+        @source_users_table = "#{@source_temp_table_prefix}#{@source_table_prefix}authors"
+        @source_characters_table = "#{@source_temp_table_prefix}#{@source_table_prefix}characters"
+        @source_warnings_table = "#{@source_temp_table_prefix}#{@source_table_prefix}warnings"
+        @source_generes_table = "#{@source_temp_table_prefix}#{@source_table_prefix}generes"
         @source_author_query = " "
 
       when 2 ## efiction2
-        @source_chapters_table = "#{@temp_table_prefix}#{@source_table_prefix}chapters"
-        @source_reviews_table = "#{@temp_table_prefix}#{@source_table_prefix}reviews"
-        @source_stories_table = "#{@temp_table_prefix}#{@source_table_prefix}stories"
-        @source_characters_table = "#{@temp_table_prefix}#{@source_table_prefix}characters"
-        @source_warnings_table = "#{@temp_table_prefix}#{@source_table_prefix}warnings"
-        @source_generes_table = "#{@temp_table_prefix}#{@source_table_prefix}generes"
-        @source_users_table = "#{@temp_table_prefix}#{@source_table_prefix}authors"
+        @source_chapters_table = "#{@source_temp_table_prefix}#{@source_table_prefix}chapters"
+        @source_reviews_table = "#{@source_temp_table_prefix}#{@source_table_prefix}reviews"
+        @source_stories_table = "#{@source_temp_table_prefix}#{@source_table_prefix}stories"
+        @source_characters_table = "#{@source_temp_table_prefix}#{@source_table_prefix}characters"
+        @source_warnings_table = "#{@source_temp_table_prefix}#{@source_table_prefix}warnings"
+        @source_generes_table = "#{@source_temp_table_prefix}#{@source_table_prefix}generes"
+        @source_users_table = "#{@source_temp_table_prefix}#{@source_table_prefix}authors"
         @source_author_query = "Select realname, penname, email, bio, date, pass, website, aol, msn, yahoo, icq, ageconsent from  #{@source_users_table} where uid ="
 
       when 3 ## efiction3
-        @source_chapters_table = "#{@temp_table_prefix}#{@source_table_prefix}chapters"
-        @source_reviews_table = "#{@temp_table_prefix}#{@source_table_prefix}reviews"
-        @source_challenges_table = "#{@temp_table_prefix}#{@source_table_prefix}challenges"
-        @source_stories_table = "#{@temp_table_prefix}#{@source_table_prefix}stories"
-        @source_categories_table = "#{@temp_table_prefix}#{@source_table_prefix}categories"
-        @source_characters_table = "#{@temp_table_prefix}#{@source_table_prefix}characters"
-        @source_series_table = "#{@temp_table_prefix}#{@source_table_prefix}series"
-        @source_inseries_table = "#{@temp_table_prefix}#{@source_table_prefix}inseries"
-        @source_ratings_table = "#{@temp_table_prefix}#{@source_table_prefix}ratings"
-        @source_classes_table = "#{@temp_table_prefix}#{@source_table_prefix}classes"
-        @source_class_types_table = "#{@temp_table_prefix}#{@source_table_prefix}class_types"
-        @source_users_table = "#{@temp_table_prefix}#{@source_table_prefix}authors"
+        @source_chapters_table = "#{@source_temp_table_prefix}#{@source_table_prefix}chapters"
+        @source_reviews_table = "#{@source_temp_table_prefix}#{@source_table_prefix}reviews"
+        @source_challenges_table = "#{@source_temp_table_prefix}#{@source_table_prefix}challenges"
+        @source_stories_table = "#{@source_temp_table_prefix}#{@source_table_prefix}stories"
+        @source_categories_table = "#{@source_temp_table_prefix}#{@source_table_prefix}categories"
+        @source_characters_table = "#{@source_temp_table_prefix}#{@source_table_prefix}characters"
+        @source_series_table = "#{@source_temp_table_prefix}#{@source_table_prefix}series"
+        @source_inseries_table = "#{@source_temp_table_prefix}#{@source_table_prefix}inseries"
+        @source_ratings_table = "#{@source_temp_table_prefix}#{@source_table_prefix}ratings"
+        @source_classes_table = "#{@source_temp_table_prefix}#{@source_table_prefix}classes"
+        @source_class_types_table = "#{@source_temp_table_prefix}#{@source_table_prefix}class_types"
+        @source_users_table = "#{@source_temp_table_prefix}#{@source_table_prefix}authors"
         @source_author_query = "Select realname, penname, email, bio, date, password from #{@source_users_table} where uid ="
 
       when 4 ## storyline
-        @source_chapters_table = "#{@temp_table_prefix}#{@source_table_prefix}chapters"
-        @source_reviews_table = "#{@temp_table_prefix}#{@source_table_prefix}reviews"
-        @source_stories_table = "#{@temp_table_prefix}#{@source_table_prefix}stories"
-        @source_users_table = "#{@temp_table_prefix}#{@source_table_prefix}users"
-        @source_categories_table = "#{@temp_table_prefix}#{@source_table_prefix}category"
-        @source_subcategories_table = "#{@temp_table_prefix}#{@source_table_prefix}subcategory"
-        @source_hitcount_table = "#{@temp_table_prefix}#{@source_table_prefix}rating"
+        @source_chapters_table = "#{@source_temp_table_prefix}#{@source_table_prefix}chapters"
+        @source_reviews_table = "#{@source_temp_table_prefix}#{@source_table_prefix}reviews"
+        @source_stories_table = "#{@source_temp_table_prefix}#{@source_table_prefix}stories"
+        @source_users_table = "#{@source_temp_table_prefix}#{@source_table_prefix}users"
+        @source_categories_table = "#{@source_temp_table_prefix}#{@source_table_prefix}category"
+        @source_subcategories_table = "#{@source_temp_table_prefix}#{@source_table_prefix}subcategory"
+        @source_hitcount_table = "#{@source_temp_table_prefix}#{@source_table_prefix}rating"
         @source_ratings_table = nil #None
         @source_author_query = "SELECT urealname, upenname, uemail, ubio, ustart, upass, uurl, uaol, umsn, uicq from #{@source_users_table} where uid ="
 
       when 5 ## otwarchive
-        @source_users_table = "#{@temp_table_prefix}#{@source_table_prefix}users"
+        @source_users_table = "#{@source_temp_table_prefix}#{@source_table_prefix}users"
       else
         puts "Error: (set_import_settings): Invalid source archive type"
     end
@@ -964,11 +961,11 @@ class MassImportTool
       count_value = nil
 
       if @use_new_mysql == 0
-        connection = Mysql.new(@database_host, @database_username, @database_password, @database_name)
+        connection = Mysql.new(@source_database_host, @source_database_username, @source_database_password, @source_database_name)
         r = connection.query(query)
 
       else
-        connection = Mysql2::Client.new(:host => @database_host, :username => @database_username, :password => @database_password, :database => @database_name)
+        connection = Mysql2::Client.new(:host => @source_database_host, :username => @source_database_username, :password => @source_database_password, :database => @source_database_name)
         r = connection.query(query)
 
       end
@@ -993,7 +990,7 @@ class MassImportTool
   # @param [string] query
   def update_record_target(query)
     begin
-      connection2 = Mysql2::Client.new(:host => @database_host, :username => @database_username, :password => @database_password, :database => @database_name)
+      connection2 = Mysql2::Client.new(:host => @source_database_host, :username => @source_database_username, :password => @source_database_password, :database => @source_database_name)
       rows_effected = 0
       rows_effected = connection2.query(query)
       connection2.close
@@ -1011,15 +1008,15 @@ class MassImportTool
 #for the mass import object.
   def populate(settings)
     ## database values
-    @database_host = settings[:database_host]
-    @database_name = settings[:database_name]
-    @database_password = settings[:database_password]
-    @database_username = settings[:database_username]
+    @source_database_host = settings[:source_database_host]
+    @source_database_name = settings[:source_database_name]
+    @source_database_password = settings[:source_database_password]
+    @source_database_username = settings[:source_database_username]
     @source_table_prefix = settings[:source_table_prefix]
     ## define temp value for temp appended prefix for table names
-    @temp_table_prefix = "ODimport"
-    if !settings[:temp_table_prefix] == nil
-      @temp_table_prefix = settings[:temp_table_prefix]
+    @source_temp_table_prefix = "ODimport"
+    if !settings[:source_temp_table_prefix] == nil
+      @source_temp_table_prefix = settings[:source_temp_table_prefix]
     end
     ## archivist values
     @archivist_email = settings[:archivist_email]
@@ -1060,40 +1057,40 @@ class MassImportTool
     ## Overrides for abnormal / non-typical imports (advanced use only)
     if settings[:override_tables] == 1
       @source_users_table = settings[:source_users_table]
-      @source_chapters_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_chapters_table]}"
-      @source_reviews_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_reviews_table]}"
-      @source_stories_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_stories_table]}"
-      @source_users_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_users_table]}"
-      @source_categories_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_category_table]}"
-      @source_subcategories_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_subcategory_table]}"
-      @source_ratings_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_ratings_table]}"
-      @source_classes_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_classes_table]}"
-      @source_class_types_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_class_types_table]}"
-      @source_warnings_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_warnings_table]}"
-      @source_characters_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_characters_table]}"
-      @source_challenges_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_challenges_table]}"
-      @source_collections_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_collections_table]}"
-      @source_hitcount_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_hitcount_table]}"
-      @source_user_preferences_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_user_preferences_table]}"
-      @source_user_profile_fields_table ="#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_user_profiles_fields_table]}"
-      @source_user_profile_values_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_user_profiles_values_table]}"
-      @source_user_profiles_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_user_profiles_table]}"
-      @source_pseuds_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_pseuds_table]}"
-      @source_collection_items_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_collection_items_table]}"
-      @source_collection_participants_table = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_collection_participants]}"
+      @source_chapters_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_chapters_table]}"
+      @source_reviews_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_reviews_table]}"
+      @source_stories_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_stories_table]}"
+      @source_users_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_users_table]}"
+      @source_categories_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_category_table]}"
+      @source_subcategories_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_subcategory_table]}"
+      @source_ratings_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_ratings_table]}"
+      @source_classes_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_classes_table]}"
+      @source_class_types_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_class_types_table]}"
+      @source_warnings_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_warnings_table]}"
+      @source_characters_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_characters_table]}"
+      @source_challenges_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_challenges_table]}"
+      @source_collections_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_collections_table]}"
+      @source_hitcount_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_hitcount_table]}"
+      @source_user_preferences_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_user_preferences_table]}"
+      @source_user_profile_fields_table ="#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_user_profiles_fields_table]}"
+      @source_user_profile_values_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_user_profiles_values_table]}"
+      @source_user_profiles_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_user_profiles_table]}"
+      @source_pseuds_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_pseuds_table]}"
+      @source_collection_items_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_collection_items_table]}"
+      @source_collection_participants_table = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_collection_participants]}"
       ## other possible source tables to be added here
 
     end
     if settings[:override_target_ratings] == 1
-      @target_rating_1 = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_target_rating_1]}" #NR
-      @target_rating_2 = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_target_rating_2]}" #general audiences
-      @target_rating_3 = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_target_rating_3]}" #teen
-      @target_rating_4 = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_target_rating_4]}" #Mature
-      @target_rating_5 = "#{@temp_table_prefix}#{@source_table_prefix}#{settings[:source_target_rating_5]}" #Explicit
+      @target_rating_1 = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_target_rating_1]}" #NR
+      @target_rating_2 = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_target_rating_2]}" #general audiences
+      @target_rating_3 = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_target_rating_3]}" #teen
+      @target_rating_4 = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_target_rating_4]}" #Mature
+      @target_rating_5 = "#{@source_temp_table_prefix}#{@source_table_prefix}#{settings[:source_target_rating_5]}" #Explicit
     end
     ## initialize database connection object
     if @connection == nil
-      Mysql2::Client.new(:host => @database_host, :username => @database_username, :password => @database_password, :database => @database_name)
+      Mysql2::Client.new(:host => @source_database_host, :username => @source_database_username, :password => @source_database_password, :database => @source_database_name)
     end
 
   end
@@ -1208,13 +1205,13 @@ class MassImportTool
     valid_string = ic.iconv(sql_file + ' ')[0..-2]
     sql_file = valid_string
     sql_file = sql_file.gsub("TYPE=MyISAM", "")
-    sql_file = sql_file.gsub(@source_table_prefix, "#{@temp_table_prefix}#{@source_table_prefix}")
+    sql_file = sql_file.gsub(@source_table_prefix, "#{@source_temp_table_prefix}#{@source_table_prefix}")
     save_string_to_file(sql_file, "#{@import_files_path}/data_clean.sql")
   end
 
   #load cleaned source db file into mysql
   def load_source_db
-    `mysql -u #{@database_username} -p#{@database_password} #{@database_name} < #{@import_files_path}/data_clean.sql`
+    `mysql -u #{@source_database_username} -p#{@source_database_password} #{@source_database_name} < #{@import_files_path}/data_clean.sql`
   end
 
 

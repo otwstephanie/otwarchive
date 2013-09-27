@@ -12,16 +12,16 @@
       <dd><%= f.check_box :create_archive_record %> </dd>
       <dt><%= f.label :source_type, "Source archive type" %> </dt>
       <dd><%= f.text_field :source_type, :size => "30" %></dd>
-      <dt><%= f.label :database_username, "Target database username" %> </dt>
-      <dd><%= f.text_field :database_username, :size => "30" %></dd>
-      <dt><%= f.label :database_password, "Target database password" %> </dt>
-      <dd><%= f.text_field :database_host, :size => "30" %></dd>
-      <dt><%= f.label :database_host, "Target database host" %> </dt>
-      <dd><%= f.text_field :database_name, :size => "40" %></dd>
-      <dt><%= f.label :database_name, "Target database name" %> </dt>
-      <dd><%= f.text_field :database_name, :size => "30" %></dd>
-      <dt><%= f.label :temp_table_prefix, "Temporary Table Prefix" %> </dt>
-      <dd><%= f.text_field :temp_table_prefix, :size => "30" %></dd>
+      <dt><%= f.label :source_database_username, "Target database username" %> </dt>
+      <dd><%= f.text_field :source_database_username, :size => "30" %></dd>
+      <dt><%= f.label :source_database_password, "Target database password" %> </dt>
+      <dd><%= f.text_field :source_database_host, :size => "30" %></dd>
+      <dt><%= f.label :source_database_host, "Target database host" %> </dt>
+      <dd><%= f.text_field :source_database_name, :size => "40" %></dd>
+      <dt><%= f.label :source_database_name, "Target database name" %> </dt>
+      <dd><%= f.text_field :source_database_name, :size => "30" %></dd>
+      <dt><%= f.label :source_temp_table_prefix, "Temporary Table Prefix" %> </dt>
+      <dd><%= f.text_field :source_temp_table_prefix, :size => "30" %></dd>
       <dt><%= f.label :source_table_prefix, "Source Table Prefix" %> </dt>
       <dd><%= f.text_field :source_table_prefix, :size => "30" %></dd>
       <dt><%= f.label :import_fandom, "Fandom string for import" %> </dt>
