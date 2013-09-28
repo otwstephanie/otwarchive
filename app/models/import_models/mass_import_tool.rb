@@ -44,12 +44,17 @@ class MassImportTool
   # Main Worker Sub
   def import_data
     puts "1) Setting Import Values"
+    #Set Default Values for Archive Type
     self.set_import_strings(@ais.source_archive_type)
-    self.create_archivist_and_collection
-    self.create_import_record
-    @import_files_path = "#{Rails.root.to_s}/imports/#{@ai.id}"
 
-    puts "2) Running File Operations"
+    puts "2)Create Archivist & Collection"
+    self.create_archivist_and_collection
+
+    self.create_import_record
+
+
+    puts "3) Running File Operations"
+    @import_files_path = "#{Rails.root.to_s}/imports/#{@ai.id}"
     run_file_operations
 
     puts "3) Updating Tags"
@@ -144,7 +149,8 @@ class MassImportTool
             new_import_work.new_pseud_id = temp_pseud_object.id
 
             ## create USER IMPORT
-            create_user_import(temp_user_object.id, temp_pseud_object.id, new_import_work.old_user_id, @ai.id)
+            user_import = UserImport.new(source_user_id: new_import_work.old_user_id, user_id: temp_user_object.id, source_archive_id: @ai.id, pseud_id:,temp_pseud_object.id)
+            #create_user_import(temp_user_object.id, temp_pseud_object.id, new_import_work.old_user_id, @ai.id)
             # 'temp_pseud_id = get_pseud_id_for_penname(ns.new_user_id,ns.penname)
             #todo edit out
             update_record_target("update user_imports set pseud_id = #{temp_pseud_object.id} where user_id = #{new_import_work.new_user_id} and source_archive_id = #{@ai.id}")
@@ -160,7 +166,7 @@ class MassImportTool
         new_import_work.new_pseud_id = import_user.pseud_id
       end
       ## insert work object
-      new_work = prepare_work(new_import_work)
+      new_work = transform_import_work(new_import_work)
       # todo investigate why i was checking length < 5 , steph
       next if new_work.chapters[0].content.length < 5
       new_work.save!
@@ -291,26 +297,7 @@ class MassImportTool
     end
   end
 
-  #create user import
-  # Note: changed to pass archive_import_id into method instead of using class instance var, Stephanie 9-18-2013
-  # @param [integer] author_id
-  # @param [integer] pseud_id
-  # @param [integer] old_user_id
-  # @param [integer] archive_import_id
-  def create_user_import(author_id, pseud_id, old_user_id, archive_import_id)
-    begin
-      new_ui = UserImport.new
-      new_ui.user_id = author_id
-      new_ui.pseud_id = pseud_id
-      new_ui.source_user_id = old_user_id
-      new_ui.source_archive_id = archive_import_id
-      new_ui.save!
-      return new_ui.id
-    rescue Exception => e
-      puts "Error: 777: function create_user_import #{e}"
-      return 0
-    end
-  end
+
 
   ##############################################################
   ## Work
@@ -320,43 +307,44 @@ class MassImportTool
   #Create work and return once saved, takes ImportWork
   # @return [Work] returns newly created work object
   # @param [ImportWork]  import_work
-  def prepare_work(import_work)
-    new_work = Work.new
-    new_work.title = import_work.title
-    new_work.summary = import_work.summary
+  def transform_import_work(import_work)
+    new_work = Work.new do |nw|
+      nw.title = import_work.title
+      nw.summary = import_work.summary
 
-    puts "Title to be = #{new_work.title}"
-    puts "summary to be = #{new_work.summary}"
+      puts "Title to be = #{nw.title}"
+      puts "summary to be = #{nw.summary}"
 
-    new_work.authors_to_sort_on = import_work.penname
-    new_work.title_to_sort_on = import_work.title
-    new_work.restricted = true
-    new_work.posted = true
-    puts "looking for pseud #{import_work.new_pseud_id}"
-    #new_work.pseuds << Pseud.find_by_id(import_work.new_pseud_id)
-    #todo ensure handles multiple authors , steph - 9-15-2013
-    new_work.authors = [Pseud.find_by_id(import_work.new_pseud_id)]
-    new_work.revised_at = Date.today
-    new_work.created_at = Date.today
-    new_work.revised_at = import_work.updated
-    new_work.created_at = import_work.published
+      nw.authors_to_sort_on = import_work.penname
+      nw.title_to_sort_on = import_work.title
+      nw.restricted = true
+      nw.posted = true
+      puts "looking for pseud #{import_work.new_pseud_id}"
+      #new_work.pseuds << Pseud.find_by_id(import_work.new_pseud_id)
+      #todo ensure handles multiple authors , steph - 9-15-2013
+      nw.authors = [Pseud.find_by_id(import_work.new_pseud_id)]
+      nw.revised_at = Date.today
+      nw.created_at = Date.today
+      nw.revised_at = import_work.updated
+      nw.created_at = import_work.published
 
-    puts "revised = #{new_work.revised_at}"
-    puts "crated at  = #{new_work.created_at}"
-    new_work.fandom_string = @ai.import_fandom
+      puts "revised = #{nw.revised_at}"
+      puts "crated at  = #{nw.created_at}"
+      nw.fandom_string = @ai.import_fandom
 
-    #todo finish rating code assignment, steph, 9-15-2013
-    new_work.rating_string = "Not Rated"
-    new_work.warning_strings = "None"
-    puts "old work id = #{import_work.old_work_id}"
-    #todo - see if there is a better way other then setting the value here, may be redundant, steph 9-15-2013
-    new_work.imported_from_url = "#{@id.id}~~#{import_work.old_work_id}"
+      #todo finish rating code assignment, steph, 9-15-2013
+      nw.rating_string = "Not Rated"
+      nw.warning_strings = "None"
+      puts "old work id = #{import_work.old_work_id}"
+      #todo - see if there is a better way other then setting the value here, may be redundant, steph 9-15-2013
+      nw.imported_from_url = "#{@id.id}~~#{import_work.old_work_id}"
 
-    new_work.language = @default_language
-    new_work = add_chapters(new_work, import_work.old_work_id, true)
+      nw.language = @default_language
+      nw = add_chapters(new_work, import_work.old_work_id, true)
 
-    ##assign to main import collection
-    new_work.collections << Collection.find(@new_collection_id)
+      ##assign to main import collection
+      nw.collections << Collection.find(@new_collection_id)
+    end
 
     return new_work
   end
@@ -754,6 +742,7 @@ class MassImportTool
 
       when 5 ## otwarchive
         @source_users_table = "#{@source_temp_table_prefix}#{@source_table_prefix}users"
+        #todo add values for all tables needed for import from otwarchive
       else
         puts "Error: (set_import_settings): Invalid source archive type"
     end

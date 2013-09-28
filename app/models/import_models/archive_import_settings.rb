@@ -1,5 +1,6 @@
 # ArchiveImport AR Model
 class ArchiveImportSettings < ActiveRecord::Base
+  belongs_to :ArchiveImport
 
   attr_accessible :archive_import_id
   attr_accessible :archivist_user_id
