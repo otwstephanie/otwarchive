@@ -149,7 +149,7 @@ class MassImportTool
             new_import_work.new_pseud_id = temp_pseud_object.id
 
             ## create USER IMPORT
-            user_import = UserImport.new(source_user_id: new_import_work.old_user_id, user_id: temp_user_object.id, source_archive_id: @ai.id, pseud_id:,temp_pseud_object.id)
+            user_import = UserImport.new(source_user_id: new_import_work.old_user_id, user_id: temp_user_object.id, source_archive_id: @ai.id, pseud_id: temp_pseud_object.id)
             #create_user_import(temp_user_object.id, temp_pseud_object.id, new_import_work.old_user_id, @ai.id)
             # 'temp_pseud_id = get_pseud_id_for_penname(ns.new_user_id,ns.penname)
             #todo edit out
@@ -185,7 +185,11 @@ class MassImportTool
       old_first_chapter_id = get_single_value_target("Select chapid from  #{@source_chapters_table} where sid = #{new_import_work.old_work_id} order by inorder asc Limit 1")
       import_chapter_reviews(old_first_chapter_id, new_work.chapters.first.id)
 
-      create_new_work_import(new_work, new_import_work, @ai.id)
+      work_import = WorkImport.new(source_user_id: new_import_work.old_user_id,  source_work_id: new_import_work.old_work_id, work_id: new_work.id, pseud_id:new_import_work.new_user_id, source_archive_id: @ai.id)
+      work_import.save
+
+      #create_new_work_import(new_work, new_import_work, @ai.id)
+
       format_chapters(new_work.id)
       i = i + 1
     end
@@ -349,27 +353,7 @@ class MassImportTool
     return new_work
   end
 
-  #Create new work import, takes Work , ImportWork
-  # @param [work] new_work
-  # @param [importwork] ns
-  # @param [integer] archive_import_id
-  def create_new_work_import(new_work, ns, archive_import_id)
-    begin
-      new_wi = WorkImport.new
-      new_wi.work_id = new_work.id
-      new_wi.pseud_id = ns.new_user_id
-      new_wi.source_archive_id = archive_import_id
-      new_wi.source_work_id = ns.old_work_id
-      new_wi.source_user_id = ns.old_user_id
-      new_wi.save!
-      return new_wi.id
-    rescue Exception => e
-      puts "Error in function create_new_work import: #{e}"
-      return 0
-    end
-  end
-
-  ##############################################################
+   ##############################################################
   ## Series / Serial Works
   ##############################################################
 

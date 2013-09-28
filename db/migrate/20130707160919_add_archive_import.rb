@@ -1,6 +1,6 @@
 class AddArchiveImport < ActiveRecord::Migration
   def self.up
-    create_table :archive_import do |t|
+    create_table :archive_imports do |t|
       t.integer  :archive_type_id
       t.integer  :associated_collection_id
       t.integer  :new_user_email_id
