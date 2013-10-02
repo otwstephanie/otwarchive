@@ -50,7 +50,7 @@ class StoryParser
 
   # places for which we have a download_chaptered_from
   # to get a set of chapters all together
-  CHAPTERED_STORY_LOCATIONS = %w(ffnet thearchive_net efiction)
+  CHAPTERED_STORY_LOCATIONS = %w(ffnet efiction)
 
   # regular expressions to match against the URLS
   SOURCE_LJ = '((live|dead|insane)?journal(fen)?\.com)|dreamwidth\.org'
@@ -247,10 +247,9 @@ class StoryParser
       return parse_chapters_into_story(location, chapter_contents, options)
     end
 
-
-    # our custom url finder checks for previously imported URL in almost any format it may have been presented
     def check_for_previous_import(location)
-      if Work.find_by_url(location).present?
+      work = Work.find_by_imported_from_url(location)
+      if work
         raise Error, "A work has already been imported from #{location}."
       end
     end
@@ -281,12 +280,8 @@ class StoryParser
       # handle importing works for others
       # build an external creatorship for each author
       if options[:importing_for_others]
-        external_author_names = options[:external_author_names] || parse_author(location,options[:external_author_name],options[:external_author_email])
-        # convert to an array if not already one
+        external_author_names = options[:external_author_names] || parse_author(location,options[:e_name],options[:e_email])
         external_author_names = [external_author_names] if external_author_names.is_a?(ExternalAuthorName)
-        if options[:external_coauthor_name] != nil
-          external_author_names << parse_author(location,options[:external_coauthor_name],options[:external_coauthor_email])
-        end
         external_author_names.each do |external_author_name|
           if external_author_name && external_author_name.external_author
             if external_author_name.external_author.do_not_import
