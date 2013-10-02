@@ -255,7 +255,6 @@ class StoryParser
       end
     end
 
-
     def set_chapter_attributes(work, chapter, location, options = {})
       chapter.position = work.chapters.length + 1
       chapter.posted = true # if options[:post_without_preview]
@@ -436,6 +435,14 @@ class StoryParser
         story = eval("download_from_#{source.downcase}(location)")
       end
 
+      # clean up any erroneously included string terminator (Issue 785)
+      story = story.gsub("\000", "")
+      
+      #story = fix_bad_characters(story)
+      # ^ This eats ALL special characters. I don't think we need it at all
+      # so I'm taking it out. If we want it back, it should be the last
+      # thing we do with the parsed bits after Nokogiri has parsed the content
+      # and worked it's magic with encoding --rebecca
       return story
     end
 
@@ -486,20 +493,8 @@ class StoryParser
       # end
       # return @chapter_contents
     end
-    
-    # this is an efiction archive but it doesn't handle chapters normally
-    # best way to handle is to get the full story printable version
-    # We have to make it a download-chaptered because otherwise it gets sent to the
-    #  generic efiction version since chaptered sources are checked first
-    def download_chaptered_from_thearchive_net(location)
-      if location.match(/^(.*)\/.*viewstory\.php.*[^p]sid=(\d+)($|&)/i)
-        location = "#{$1}/viewstory.php?action=printable&psid=#{$2}"
-      end
-      text = download_with_timeout(location)
-      text.sub!('</style>', '</style></head>') unless text.match('</head>')  
-      return [text]
-    end
-    
+
+
     # grab all the chapters of a story from an efiction-based site
     def download_chaptered_from_efiction(location)
       @chapter_contents = []
@@ -507,21 +502,14 @@ class StoryParser
         site = $1
         storyid = $2        
         chapnum = 1
-        last_body = ""
         Timeout::timeout(STORY_DOWNLOAD_TIMEOUT) {
           loop do
             url = "#{site}/viewstory.php?action=printable&sid=#{storyid}&chapter=#{chapnum}"
-            body = download_with_timeout(url)   
-            # get a section to check that this isn't a duplicate of previous chapter
-            body_to_check = body.slice(10,DUPLICATE_CHAPTER_LENGTH)
-            if body.nil? || body_to_check == last_body || chapnum > MAX_CHAPTER_COUNT || body.match(/<div class='chaptertitle'> by <\/div>/) || body.match(/Access denied./) || body.match(/Chapter : /)
+            body = download_with_timeout(url)
+            if body.nil? || chapnum > MAX_CHAPTER_COUNT || body.match(/<div class='chaptertitle'> by <\/div>/) || body.match(/Access denied./) || body.match(/Chapter : /)
               break
             end
-            # save the value to check for duplicate chapter
-            last_body = body_to_check       
             
-            # clean up the broken head in many efiction printable sites
-            body.sub!('</style>', '</style></head>') unless body.match('</head>')            
             @chapter_contents << body
             chapnum = chapnum + 1
           end
@@ -549,20 +537,6 @@ class StoryParser
       work_params = { :title => "UPLOADED WORK", :chapter_attributes => {:content => ""} }
 
       @doc = Nokogiri::HTML.parse(story, nil, encoding) rescue ""
-      
-      # Try to convert all relative links to absolute
-      base = @doc.css('base').present? ? @doc.css('base')[0]['href'] : location.split('?').first      
-      if base.present?
-        @doc.css('a').each do |link|
-          if link['href'].present?
-            begin
-              query = link['href'].match(/(\?.*)$/) ? $1 : ''
-              link['href'] = URI.join(base, link['href'].gsub(/(\?.*)$/, '')).to_s + query
-            rescue
-            end
-          end
-        end
-      end
 
       if location && (source = get_source_if_known(KNOWN_STORY_PARSERS, location))
         params = eval("parse_story_from_#{source.downcase}(story)")
@@ -827,7 +801,6 @@ class StoryParser
       if !divs[0].nil?
         divs[0].remove
       end
-
       storytext = clean_storytext(storytext.inner_html)
 
       work_params[:notes] = ((@doc/"#storytext")/"p").first.try(:inner_html)
@@ -1048,13 +1021,9 @@ class StoryParser
       if story.blank?
         raise Error, "We couldn't download anything from #{location}. Please make sure that the URL is correct and complete, and try again."
       end
-      
-      # clean up any erroneously included string terminator (Issue 785)
-      story.gsub!("\000", "")
-      
       story
     end
-    
+
     def get_last_modified(location)
       Timeout::timeout(STORY_DOWNLOAD_TIMEOUT) {
         resp = open(location)
