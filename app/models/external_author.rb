@@ -67,8 +67,11 @@ class ExternalAuthor < ActiveRecord::Base
           archivist = external_creatorship.archivist
           pseud_to_add = claiming_user.pseuds.select {|pseud| pseud.name == external_author_name.name}.first || claiming_user.default_pseud
           work.change_ownership(archivist, claiming_user, pseud_to_add)
+
           claimed_works << work.id
         end
+        external_creatorship.external_author_name_id = 0
+        external_creatorship.save
       end
     end
 
