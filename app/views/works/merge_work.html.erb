@@ -1,13 +1,21 @@
 <!--Descriptive page name, messages and instructions-->
 <h2 class="heading"><%= ts('Merge Work') %></h2>
-
+<%= error_messages_for :preference %>
 
 <!--/descriptions-->
 
-
+<!--subnav-->
+<h3 class="landmark heading">Navigation</h3>
+<ul class="navigation actions" role="navigation">
+  <li><%= link_to ts("Edit My Profile"), edit_user_path(@user) %></li>
+  <li><%= link_to ts('Manage My Pseuds'), user_pseuds_path(@user) %></li>
+  <li><%= link_to ts("Change My User Name"), change_username_user_path(@user) %></li>
+  <li><%= link_to ts('Orphan My Works'), new_orphan_path %></li>
+</ul>
+<!--/subnav-->
 
 <!--main content-->
-<%= form_for(@work, :url => { :action => "merge_work", :user_id => @user, :method => 'put'  }) do |f| %>
+<%= form_for(@work, :url => { :action => "merge_work", :user_id => @user }) do |f| %>
     <fieldset>
       <legend><%= ts("Merge") %></legend>
       <h4 class="heading"><%= ts("Merge") %></h4>
@@ -17,10 +25,8 @@
         </li>
 
         <li>
-          <%=label_tag 'Target Work Id' %>
-          <%=text_field_tag 'target_id'%>
-          <li>Example: In the following url the work id is <bold>358670</bold><br></li>
-        <li>Example URL: http://archiveofourown.org/works/358670/chapters/581262 </li>
+          <%= f.text_field :target_id %>
+          <%= f.label :target_id, ts("Target Id") %>
         </li>
 
 
