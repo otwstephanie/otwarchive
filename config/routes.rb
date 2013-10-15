@@ -255,7 +255,6 @@ Otwarchive::Application.routes.draw do
       collection do
         get :drafts
         get :collected
-
         get :show_multiple
         post :edit_multiple
         put :update_multiple
@@ -269,7 +268,6 @@ Otwarchive::Application.routes.draw do
 
   resources :works do
     collection do
-
       post :import
       get :search
     end

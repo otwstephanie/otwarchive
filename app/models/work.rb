@@ -384,6 +384,19 @@ class Work < ActiveRecord::Base
     end
   end
 
+    #update collection_items to point to target work
+    # Update collection_items set item_id = target_id where item_id = self.id and item_type = "Work"
+    temp_collection_items = CollectionItem.find_all_by_item_id(self.id)
+    temp_collection_items.each { |ci|
+      ci.item_id = target_id
+      ci.save
+    }
+    # update readings replace source id with target id
+    temp_readings = Reading.find_by_work_id(self.id)
+    temp_readings.each { |r|
+      r.work_id = target_id
+      r.save }
+
   # merge works helper, related works
   # params (target_id) target work id
   def _merge_related_works(target_id)
@@ -395,6 +408,8 @@ class Work < ActiveRecord::Base
         wrts.save!
       }
     end
+    #set redirect for source work to target work id
+    self.redirect_work_id = target_work.id
 
     #update related works that list source so they point to target
     works_self_related_to = RelatedWork.find_by_parent_type_and_parent_id('Work',self.id)
@@ -416,8 +431,20 @@ class Work < ActiveRecord::Base
         r.work_id = target_id
         r.save! }
     end
-  end
+    #destroy chapters for source
+    self.chapters.each {|c| c.destroy }
 
+    #destroy taggings for source
+    self.taggings.each {|tag| tag.destroy }
+
+    #set work to admin hidden
+    self.hidden_by_admin=1
+
+    #save self
+    self.save
+
+
+  end
   ########################################################################
   # AUTHORSHIP
   ########################################################################
