@@ -18,39 +18,39 @@ class WorksController < ApplicationController
   before_filter :set_author_attributes, :only => [ :new, :create, :edit, :update, :manage_chapters, :preview, :show, :navigate ]
   before_filter :set_instance_variables, :only => [ :new, :create, :edit, :update, :manage_chapters, :preview, :show, :navigate, :import ]
   before_filter :set_instance_variables_tags, :only => [ :edit_tags, :update_tags, :preview_tags ]
-
+  
   before_filter :clean_work_search_params, :only => [ :search, :index, :collected ]
 
   cache_sweeper :collection_sweeper
   cache_sweeper :static_sweeper
   cache_sweeper :feed_sweeper
-
+  
   # we want to extract the countable params from work_search and move them into their fields
   def clean_work_search_params
     if params[:work_search].present? && params[:work_search][:query].present?
       # swap in gt/lt for ease of matching; swap them back out for safety at the end
       params[:work_search][:query].gsub!('&gt;', '>')
-      params[:work_search][:query].gsub!('&lt;', '<')
+      params[:work_search][:query].gsub!('&lt;', '<')           
 
-      # extract countable params
-      %w(word kudo comment bookmark hit).each do |term|
+      # extract countable params    
+      %w(word kudo comment bookmark hit).each do |term|        
         if params[:work_search][:query].gsub!(/#{term}s?\s*(?:\_?count)?\s*:?\s*((?:<|>|=|:)\s*\d+(?:\-\d+)?)/i, '')
           # pluralize, add _count, convert to symbol
           term = term.pluralize unless term == "word"
           term = term + "_count" unless term == "hits"
           term = term.to_sym
-
+          
           value = $1.gsub(/^(\:|\=)/, '') # get rid of : and =
           # don't overwrite if submitting from advanced search?
           params[:work_search][term] = value unless params[:work_search][term].present?
         end
-      end
-
+      end        
+      
       # get sort-by
       if params[:work_search][:query].gsub!(/sort(?:ed)?\s*(?:by)?\s*:?\s*(<|>|=|:)\s*(\w+)\s*(ascending|descending)?/i, '')
         sortdir = $3 || $1
         sortby = $2.gsub(/\s*_?count/, '').singularize # turn word_count or word count or words into just "word" eg
-
+        
         WorkSearch::SORT_OPTIONS.each do |opt, value|
           # stop at the first one we find
           if opt.match(/#{sortby}/i)
@@ -58,12 +58,12 @@ class WorksController < ApplicationController
             break
           end
         end
-
+        
         if sortdir == ">" || sortdir == "ascending"
           params[:work_search][:sort_direction] = "asc"
         elsif sortdir == "<" || sortdir == "descending"
           params[:work_search][:sort_direction] = "desc"
-        end
+        end        
       end
 
       # put categories into quotes
@@ -72,11 +72,11 @@ class WorksController < ApplicationController
         cr = Regexp.new("#{qr}#{cat}#{qr}")
         params[:work_search][:query].gsub!(cr, "\"#{cat}\"")
       end
-
+      
       # swap out gt/lt
       params[:work_search][:query].gsub!('>', '&gt;')
       params[:work_search][:query].gsub!('<', '&lt;')
-
+      
       # get rid of empty queries
       params[:work_search][:query] = nil if params[:work_search][:query].match(/^\s*$/)
     end
@@ -116,17 +116,17 @@ class WorksController < ApplicationController
     options.merge!(page: params[:page])
     options[:show_restricted] = current_user.present? || logged_in_as_admin?
     @page_subtitle = index_page_title
-
+    
     if @owner.present?
       if @admin_settings.disable_filtering?
         @works = Work.list_without_filters(@owner, options)
       else
         @search = WorkSearch.new(options.merge(faceted: true, works_parent: @owner))
-
+        
         # If we're using caching we'll try to get the results from cache
-        # Note: we only cache some first initial number of pages since those are biggest bang for
+        # Note: we only cache some first initial number of pages since those are biggest bang for 
         # the buck -- users don't often go past them
-        if use_caching? && params[:work_search].blank? && params[:fandom_id].blank? &&
+        if use_caching? && params[:work_search].blank? && params[:fandom_id].blank? && 
           (params[:page].blank? || params[:page].to_i <= ArchiveConfig.PAGES_TO_CACHE)
           # the subtag is for eg collections/COLL/tags/TAG
           subtag = (@tag.present? && @tag != @owner) ? @tag : nil
@@ -171,7 +171,7 @@ class WorksController < ApplicationController
         @facets = @works.facets
       end
       @page_subtitle = ts("%{username} - Collected Works", username: @user.login)
-    end
+    end    
   end
 
   def drafts
@@ -197,11 +197,6 @@ class WorksController < ApplicationController
   # GET /works/1
   # GET /works/1.xml
   def show
-    @page_title = @work.unrevealed? ? ts("Mystery Work") :
-      get_page_title(@work.fandoms.size > 3 ? ts("Multifandom") : @work.fandoms.string,
-        @work.anonymous? ?  ts("Anonymous")  : @work.pseuds.sort.collect(&:byline).join(', '),
-        @work.title)
-    
     # Users must explicitly okay viewing of adult content
     if params[:view_adult]
       session[:adult] = true
@@ -221,13 +216,17 @@ class WorksController < ApplicationController
 
     @tag_categories_limited = Tag::VISIBLE - ["Warning"]
     @kudos = @work.kudos.with_pseud.includes(:pseud => :user).order("created_at DESC")
-
+    
     if current_user.respond_to?(:subscriptions)
       @subscription = current_user.subscriptions.where(:subscribable_id => @work.id,
                                                        :subscribable_type => 'Work').first ||
                       current_user.subscriptions.build(:subscribable => @work)
     end
 
+    @page_title = @work.unrevealed? ? ts("Mystery Work") :
+      get_page_title(@work.fandoms.size > 3 ? ts("Multifandom") : @work.fandoms.string,
+        @work.anonymous? ?  ts("Anonymous")  : @work.pseuds.sort.collect(&:byline).join(', '),
+        @work.title)
     render :show
     @work.increment_hit_count(request.remote_ip)
     Reading.update_or_create(@work, current_user) if current_user
@@ -350,7 +349,7 @@ class WorksController < ApplicationController
     unless @work.errors.empty?
       render :edit and return
     end
-
+    
     if !@work.invalid_pseuds.blank? || !@work.ambiguous_pseuds.blank?
       @work.valid? ? (render :_choose_coauthor) : (render :new)
     elsif params[:preview_button] || params[:cancel_coauthor_button]
@@ -515,22 +514,22 @@ class WorksController < ApplicationController
     # check to make sure we have some urls to work with
     @urls = params[:urls].split
     unless @urls.length > 0
-      flash.now[:error] = ts("Did you want to enter a URL?")
+      setflash; flash.now[:error] = ts("Did you want to enter a URL?")
       render :new_import and return
     end
 
     # is this an archivist importing?
     if params[:importing_for_others] && !current_user.archivist
-      flash.now[:error] = ts("You may not import stories by other users unless you are an approved archivist.")
+      setflash; flash.now[:error] = ts("You may not import stories by other users unless you are an approved archivist.")
       render :new_import and return
     end
 
     # make sure we're not importing too many at once
     if params[:import_multiple] == "works" && (!current_user.archivist && @urls.length > ArchiveConfig.IMPORT_MAX_WORKS || @urls.length > ArchiveConfig.IMPORT_MAX_WORKS_BY_ARCHIVIST)
-      flash.now[:error] = ts("You cannot import more than %{max} works at a time.", :max => current_user.archivist ? ArchiveConfig.IMPORT_MAX_WORKS_BY_ARCHIVIST : ArchiveConfig.IMPORT_MAX_WORKS)
+      setflash; flash.now[:error] = ts("You cannot import more than %{max} works at a time.", :max => current_user.archivist ? ArchiveConfig.IMPORT_MAX_WORKS_BY_ARCHIVIST : ArchiveConfig.IMPORT_MAX_WORKS)
       render :new_import and return
     elsif params[:import_multiple] == "chapters" && @urls.length > ArchiveConfig.IMPORT_MAX_CHAPTERS
-      flash.now[:error] = ts("You cannot import more than %{max} chapters at a time.", :max => ArchiveConfig.IMPORT_MAX_CHAPTERS)
+      setflash; flash.now[:error] = ts("You cannot import more than %{max} chapters at a time.", :max => ArchiveConfig.IMPORT_MAX_CHAPTERS)
       render :new_import and return
     end
 
@@ -706,6 +705,7 @@ protected
 
 public
 
+
   def post_draft
     @user = current_user
     @work = Work.find(params[:id])
@@ -766,7 +766,7 @@ public
     @user = current_user
     @works = Work.select("distinct works.*").joins(:pseuds => :user).where("users.id = ?", @user.id).where(:id => params[:work_ids])
   end
-
+  
   def delete_multiple
     @user = current_user
     @works = Work.joins(:pseuds => :user).where("users.id = ?", @user.id).where(:id => params[:work_ids]).readonly(false)
@@ -810,7 +810,7 @@ public
   end
 
   protected
-
+  
   def load_owner
     if params[:user_id].present?
       @user = User.find_by_login(params[:user_id])
@@ -822,7 +822,7 @@ public
       @tag = Tag.find_by_name(params[:tag_id])
       unless @tag && @tag.is_a?(Tag)
         raise ActiveRecord::RecordNotFound, "Couldn't find tag named '#{params[:tag_id]}'"
-      end
+      end 
       unless @tag.canonical?
         if @tag.merger.present?
           if @collection.present?
@@ -869,6 +869,8 @@ public
   def set_instance_variables
     if params[:id] # edit, update, preview, manage_chapters
       @work ||= Work.find(params[:id])
+      @previous_published_at = @work.first_chapter.published_at
+      @previous_backdate_setting = @work.backdate
       if params[:work]  # editing, save our changes
         if params[:preview_button] || params[:cancel_button]
           @work.preview_mode = true
@@ -965,7 +967,7 @@ public
       ""
     end
   end
-
+  
   def index_page_title
     if @owner.present?
       owner_name = case @owner.class.to_s
@@ -993,5 +995,5 @@ public
       AdminActivity.log_action(current_admin, @work, action: params[:action], summary: summary)
     end
   end
-
+  
 end
