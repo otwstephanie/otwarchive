@@ -274,7 +274,7 @@ Otwarchive::Application.routes.draw do
       get :search
     end
     member do
-      post :merge_work
+      put :merge_work
       get :preview
       post :post
       put :post_draft
