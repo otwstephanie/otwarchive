@@ -750,7 +750,6 @@ protected
 
 public
 
-
   def post_draft
     @user = current_user
     @work = Work.find(params[:id])
