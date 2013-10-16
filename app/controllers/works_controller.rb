@@ -509,6 +509,7 @@ class WorksController < ApplicationController
   end
 
   def merge_work_page
+
     render :merge_work and return
   end
   def merge_work
