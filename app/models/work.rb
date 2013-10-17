@@ -332,7 +332,7 @@ class Work < ActiveRecord::Base
     self.kudos.each { |k| k.commentable_id = target_id; k.save! }
 
     #Check if same number of chapters (possibly display warning if not, if not same puts comments at last chapter)
-    if self.chapters.count != @target_work.chapters.count {equal_chapters = true }
+    if self.chapters.count == @target_work.chapters.count
       self.chapters.each {|c|
 
         #Todo This is likely incorrect, trying to do a select to return a chapter object that is a member of target_work and in specified position
@@ -343,7 +343,8 @@ class Work < ActiveRecord::Base
         }
       }
     else
-      last_target_chapter_id = @target_work.chapters.last.id
+      t_chapter = Chapter.find_by_sql ["select id from chapters where work_id = ? order by position desc limit 1", target_id ]
+      last_target_chapter_id = t_chapter.id
       self.chapters.each {|c|
         c.comments.each { |chapter_comment|
           chapter_comment.parent_id = last_target_chapter_id
@@ -352,7 +353,6 @@ class Work < ActiveRecord::Base
         }
       }
     end
-
     #update collection_items to point to target work
     # Update collection_items set item_id = target_id where item_id = self.id and item_type = "Work"
     temp_collection_items = CollectionItem.find_all_by_item_id(self.id)
