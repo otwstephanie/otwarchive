@@ -329,7 +329,7 @@ class Work < ActiveRecord::Base
 
     target_work = target
     #Loop through kudos for source work and assign them to target work
-    self.kudos.each { |k| k.commentable_id = target_id; k.save }
+    self.kudos.each { |k| k.commentable_id = target_id; k.save! }
 
     #Check if same number of chapters (possibly display warning if not, if not same puts comments at last chapter)
     if self.chapters.count != @target_work.chapters.count {equal_chapters = true }
@@ -339,7 +339,7 @@ class Work < ActiveRecord::Base
         target_chapter_id = @target_work.chapters.find_by_position(c.position)
         c.comments.each { |chapter_comment|
           chapter_comment.parent_id = target_chapter_id
-          chapter_comment.save
+          chapter_comment.save!
         }
       }
     else
@@ -348,7 +348,7 @@ class Work < ActiveRecord::Base
         c.comments.each { |chapter_comment|
           chapter_comment.parent_id = last_target_chapter_id
           chapter_comment.content = "Comment for Chapter " + c.position + " " + c.title + " <br>" + chapter_comment.content
-          chapter_comment.save
+          chapter_comment.save!
         }
       }
     end
@@ -357,15 +357,15 @@ class Work < ActiveRecord::Base
     # Update collection_items set item_id = target_id where item_id = self.id and item_type = "Work"
     temp_collection_items = CollectionItem.find_all_by_item_id(self.id)
     temp_collection_items.each { |ci|
-      ci.item_id = target_id
-      ci.save
+    ci.item_id = target_id
+    ci.save!
     }
     # update readings replace source id with target id
     temp_readings = Reading.find_by_work_id(self.id)
     if temp_readings != nil
       temp_readings.each { |r|
         r.work_id = target_id
-        r.save }
+        r.save! }
     end
 
 
@@ -385,7 +385,7 @@ class Work < ActiveRecord::Base
     self.hidden_by_admin=1
 
     #save self
-    self.save
+    self.save!
 
   end
   ########################################################################
