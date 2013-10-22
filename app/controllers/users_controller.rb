@@ -142,7 +142,9 @@ class UsersController < ApplicationController
 
   def _update_work_username(user)
     my_user = User.new
-    my_user.works.each { |w| Work.}
+    my_user = user
+    my_user.works.each { |w| Work.tire.index.update w }
+
   end
 
   def change_username
@@ -159,6 +161,7 @@ class UsersController < ApplicationController
           old_login = @user.login
           @user.login = @new_login
           if @user.save
+            _update_work_username(@user)
             flash[:notice] = ts("Your user name was changed")
 
             new_pseud = Pseud.where(:name => @new_login, :user_id => @user.id).first
