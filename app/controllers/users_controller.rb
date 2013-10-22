@@ -140,6 +140,11 @@ class UsersController < ApplicationController
     end
   end
 
+  def _update_work_username(user)
+    my_user = User.new
+    my_user.works.each { |w| Work.}
+  end
+
   def change_username
     if params[:new_login]
       @new_login = params[:new_login]
