@@ -143,7 +143,7 @@ class UsersController < ApplicationController
   def _update_work_username(user)
     my_user = User.new
     my_user = user
-    my_user.works.each { |w| Work.tire.index.update w }
+    my_user.works.each { |w| w.save }
 
   end
 
