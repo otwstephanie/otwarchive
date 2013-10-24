@@ -46,6 +46,9 @@ class ChaptersController < ApplicationController
         chapter_position = @chapters.index(@chapter)
         @previous_chapter = @chapters[chapter_position-1] unless chapter_position == 0
         @next_chapter = @chapters[chapter_position+1]
+        chapter_title = " - Chapter #{@chapter.position.to_s}"
+      else
+        chapter_title = ""
       end
       @commentable = @work
       @comments = @chapter.comments
@@ -53,7 +56,7 @@ class ChaptersController < ApplicationController
       @page_title = @work.unrevealed? ? ts("Mystery Work - Chapter %{position}", :position => @chapter.position.to_s) :
         get_page_title(@work.fandoms.string,
           @work.anonymous? ? ts("Anonymous") : @work.pseuds.sort.collect(&:byline).join(', '),
-          @work.title + " - Chapter " + @chapter.position.to_s)
+          @work.title + chapter_title)
 
       @kudos = @work.kudos.with_pseud.includes(:pseud => :user).order("created_at DESC")
 
