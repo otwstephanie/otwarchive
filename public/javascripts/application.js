@@ -16,18 +16,6 @@ $j(document).ready(function() {
     });
     setupDropdown();
 
-    // I THINK THIS IS ONLY FOR WORKS -- CAN WE JUST DELETE AND USE RAILS.JS?
-    // replace all GET delete links with their AJAXified equivalent and add a confirmation message if none has been defined in the backend
-    $j('a[href$="/confirm_delete"]').each(function(){
-        this.href = this.href.replace(/\/confirm_delete$/, "");
-        $j(this).attr("data-method", "delete");
-        if ($j(this).is("[data-confirm]")) {
-          return;
-        } else {
-          $j(this).attr("data-confirm", "Are you sure? This CANNOT BE UNDONE!");
-        };
-    });
-
     // remove final comma from comma lists in older browsers
     $j('.commas li:last-child').addClass('last');
 
@@ -35,6 +23,7 @@ $j(document).ready(function() {
     $j('.actions').children('.share').removeClass('hidden');
 
     handleKudosSubmission();
+    prepareDeleteLinks();
 });
 
 ///////////////////////////////////////////////////////////////////
@@ -402,5 +391,21 @@ function handleKudosSubmission() {
       msg = "You've already left kudos here";
     }
     $j('#kudos_message').addClass('error').html('<p>' + msg + '</p>');
+  });
+}
+
+// Remove the /confirm_delete portion of delete links so user who have JS enabled will
+// be able to delete items via hyperlink (per rails/jquery-ujs) rather than a dedicated
+// form page. Also add a confirmation message if one was not set in the back end using
+// :confirm => "message" 
+function prepareDeleteLinks() {
+  $j('a[href$="/confirm_delete"]').each(function(){
+    this.href = this.href.replace(/\/confirm_delete$/, "");
+    $j(this).attr("data-method", "delete");
+    if ($j(this).is("[data-confirm]")) {
+      return;
+    } else {
+      $j(this).attr("data-confirm", "Are you sure? This CANNOT BE UNDONE!");
+    };
   });
 }
