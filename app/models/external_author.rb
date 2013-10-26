@@ -76,7 +76,7 @@ class ExternalAuthor < ActiveRecord::Base
         new_creatorship.pseud = pseud_to_add
         new_creatorship.creation = external_creatorship.creation
         new_creatorship.save!
-        external_creatorship.destroy
+        external_creatorship.delete
       end
     end
 
