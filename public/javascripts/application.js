@@ -401,6 +401,7 @@ function handleKudosSubmission() {
 function prepareDeleteLinks() {
   $j('a[href$="/confirm_delete"]').each(function(){
     this.href = this.href.replace(/\/confirm_delete$/, "");
+    $j(this).attr("data-method", "delete");
     if ($j(this).is("[data-confirm]")) {
       return;
     } else {
