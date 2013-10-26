@@ -72,10 +72,13 @@ class ExternalAuthor < ActiveRecord::Base
 
           claimed_works << work.id
         end
-        new_creatorship = Creatorship.new
-        new_creatorship.pseud = pseud_to_add
-        new_creatorship.creation = external_creatorship.creation
-        new_creatorship.save!
+        current_creatorship = Creatorship.find_by_creation_id_and_creation_type(external_creatorship.creation.id,"Work")
+        if current_creatorship.nil?
+          new_creatorship = Creatorship.new
+          new_creatorship.pseud = pseud_to_add
+          new_creatorship.creation = external_creatorship.creation
+          new_creatorship.save!
+        end
         external_creatorship.delete
       end
     end
