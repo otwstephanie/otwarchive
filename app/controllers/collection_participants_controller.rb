@@ -48,6 +48,11 @@ class CollectionParticipantsController < ApplicationController
   ## ACTIONS
 
   def join
+   member_pseud =  @collection.user_is_participant?(current_user)
+   if member_pseud != nil
+      flash[:error] =  "You are already a member of the collection with your pseud: #{member_pseud}?"
+      redirect_to(request.env["HTTP_REFERER"] || root_path) and return
+    end
     unless @collection
       flash[:error] = t('no_collection', :default => "Which collection did you want to join?")
       redirect_to(request.env["HTTP_REFERER"] || root_path) and return

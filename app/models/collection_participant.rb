@@ -23,6 +23,12 @@ class CollectionParticipant < ActiveRecord::Base
   validates_inclusion_of :participant_role, :in => PARTICIPANT_ROLES,
     :message => ts("That is not a valid participant role.")
 
+  scope :for_user_non_distinct, lambda {|user|
+    select("collection_participants.*").
+        joins(:pseud => :user).
+        where('users.id = ?', user.id)
+  }
+
   scope :for_user, lambda {|user|
     select("DISTINCT collection_participants.*").
     joins(:pseud => :user).
