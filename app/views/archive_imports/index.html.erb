@@ -1,0 +1,39 @@
+<h1>Listing archive_imports</h1>
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Archive type</th>
+    <th>Old base url</th>
+    <th>Notes</th>
+    <th>Collection</th>
+    <th>Existing user email</th>
+    <th>New user email</th>
+    <th>New url</th>
+    <th>Archivist user</th>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @archive_imports.each do |archive_import| %>
+  <tr>
+    <td><%= archive_import.name %></td>
+    <td><%= archive_import.archive_type_id %></td>
+    <td><%= archive_import.old_base_url %></td>
+    <td><%= archive_import.notes %></td>
+    <td><%= archive_import.collection_id %></td>
+    <td><%= archive_import.existing_user_email_id %></td>
+    <td><%= archive_import.new_user_email_id %></td>
+    <td><%= archive_import.new_url %></td>
+    <td><%= archive_import.archivist_user_id %></td>
+    <td><%= link_to 'Show', archive_import %></td>
+    <td><%= link_to 'Edit', edit_archive_import_path(archive_import) %></td>
+    <td><%= link_to 'Destroy', archive_import, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Archive import', new_archive_import_path %>

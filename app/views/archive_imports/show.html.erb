@@ -1,0 +1,50 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <b>Name:</b>
+  <%= @archive_import.name %>
+</p>
+
+<p>
+  <b>Archive type:</b>
+  <%= @archive_import.archive_type_id %>
+</p>
+
+<p>
+  <b>Old base url:</b>
+  <%= @archive_import.old_base_url %>
+</p>
+
+<p>
+  <b>Notes:</b>
+  <%= @archive_import.notes %>
+</p>
+
+<p>
+  <b>Collection:</b>
+  <%= @archive_import.collection_id %>
+</p>
+
+<p>
+  <b>Existing user email:</b>
+  <%= @archive_import.existing_user_email_id %>
+</p>
+
+<p>
+  <b>New user email:</b>
+  <%= @archive_import.new_user_email_id %>
+</p>
+
+<p>
+  <b>New url:</b>
+  <%= @archive_import.new_url %>
+</p>
+
+<p>
+  <b>Archivist user:</b>
+  <%= @archive_import.archivist_user_id %>
+</p>
+
+
+<%= link_to 'Edit', edit_archive_import_path(@archive_import) %> |
+<%= link_to 'Back', archive_imports_path %>

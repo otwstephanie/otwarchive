@@ -1,0 +1,23 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
+
+one:
+  name: MyString
+  archive_type_id: MyString
+  old_base_url: MyString
+  notes: MyString
+  collection_id: 1
+  existing_user_email_id: 1
+  new_user_email_id: 1
+  new_url: MyString
+  archivist_user_id: 1
+
+two:
+  name: MyString
+  archive_type_id: MyString
+  old_base_url: MyString
+  notes: MyString
+  collection_id: 1
+  existing_user_email_id: 1
+  new_user_email_id: 1
+  new_url: MyString
+  archivist_user_id: 1
