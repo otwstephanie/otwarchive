@@ -1,5 +1,8 @@
 Otwarchive::Application.routes.draw do
   
+  resources :archive_imports
+
+
   #### ERRORS ####
   
   match '/403', :to => 'errors#403'

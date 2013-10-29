@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20121129192353) do
+ActiveRecord::Schema.define(:version => 20130925172325) do
 
   create_table "abuse_reports", :force => true do |t|
     t.string   "email"
@@ -22,6 +22,17 @@ ActiveRecord::Schema.define(:version => 20121129192353) do
     t.string   "ip_address"
     t.string   "category"
     t.integer  "comment_sanitizer_version", :limit => 2, :default => 0, :null => false
+  end
+
+  create_table "admin_activities", :force => true do |t|
+    t.integer  "admin_id"
+    t.integer  "target_id"
+    t.string   "target_type"
+    t.string   "action"
+    t.text     "summary"
+    t.integer  "summary_sanitizer_version", :limit => 2, :default => 0, :null => false
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "admin_post_taggings", :force => true do |t|
@@ -98,6 +109,83 @@ ActiveRecord::Schema.define(:version => 20121129192353) do
     t.datetime "created_at"
     t.integer  "position",                               :default => 1
     t.integer  "content_sanitizer_version", :limit => 2, :default => 0, :null => false
+  end
+
+  create_table "archive_import_email_values", :force => true do |t|
+    t.text "paragraph1_part1"
+    t.text "paragraph1_part2"
+    t.text "paragraph2"
+    t.text "paragraph3"
+    t.text "paragraph4"
+    t.text "paragraph5"
+    t.text "paragraph6"
+    t.text "paragraph7_part1"
+    t.text "paragraph7_part2"
+    t.text "paragraph8_part1"
+    t.text "paragraph8_part2"
+    t.text "paragraph9"
+  end
+
+  create_table "archive_import_settings", :force => true do |t|
+    t.integer "archive_import_id"
+    t.integer "archivist_user_id"
+    t.integer "archive_type_id"
+    t.integer "create_archive_import_record", :default => 1
+    t.integer "archive_has_chapter_files"
+    t.integer "check_archivist_activated",    :default => 1
+    t.integer "rerun_import",                 :default => 0
+    t.integer "apply_temp_table_prefix",      :default => 1
+    t.integer "use_proper_categories",        :default => 0
+    t.integer "use_new_mysql",                :default => 0
+    t.integer "target_rating_1",              :default => 9
+    t.integer "target_rating_2",              :default => 10
+    t.integer "target_rating_3",              :default => 11
+    t.integer "target_rating_4",              :default => 12
+    t.integer "target_rating_5",              :default => 13
+    t.integer "source_warning_class_id"
+    t.integer "new_user_email_id"
+    t.integer "existing_user_email_id"
+    t.integer "import_status",                :default => 1
+    t.string  "sql_filename"
+    t.string  "source_database_host"
+    t.string  "source_database_username"
+    t.string  "source_table_prefix"
+    t.string  "source_database_password"
+    t.string  "source_database_name"
+    t.string  "source_temp_table_prefix"
+    t.string  "archive_chapters_filename"
+    t.string  "import_fandom"
+    t.string  "archivist_login"
+    t.string  "archivist_password"
+    t.string  "archivist_email"
+  end
+
+  create_table "archive_imports", :force => true do |t|
+    t.string   "name"
+    t.string   "archive_type_id"
+    t.string   "old_base_url"
+    t.string   "notes"
+    t.integer  "collection_id"
+    t.integer  "existing_user_email_id"
+    t.integer  "new_user_email_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "new_url"
+    t.integer  "archivist_user_id"
+  end
+
+  create_table "banned_strings", :force => true do |t|
+    t.string   "string_value"
+    t.integer  "string_type"
+    t.datetime "created_at",   :null => false
+    t.datetime "updated_at",   :null => false
+  end
+
+  create_table "banned_values", :force => true do |t|
+    t.string   "name"
+    t.integer  "ban_type",   :default => 0, :null => false
+    t.datetime "created_at",                :null => false
+    t.datetime "updated_at",                :null => false
   end
 
   create_table "bookmarks", :force => true do |t|
@@ -199,6 +287,20 @@ ActiveRecord::Schema.define(:version => 20121129192353) do
 
   add_index "chapters", ["work_id"], :name => "index_chapters_on_work_id"
   add_index "chapters", ["work_id"], :name => "works_chapter_index"
+
+  create_table "collection_import_helper", :id => false, :force => true do |t|
+    t.string  "name"
+    t.string  "title"
+    t.integer "id",                :default => 0, :null => false
+    t.integer "old_id"
+    t.integer "source_archive_id"
+  end
+
+  create_table "collection_imports", :force => true do |t|
+    t.integer "old_id"
+    t.integer "new_id"
+    t.integer "source_archive_id"
+  end
 
   create_table "collection_items", :force => true do |t|
     t.integer  "collection_id"
@@ -355,6 +457,13 @@ ActiveRecord::Schema.define(:version => 20121129192353) do
   add_index "delayed_jobs", ["locked_by"], :name => "delayed_jobs_locked_by"
   add_index "delayed_jobs", ["run_at"], :name => "delayed_jobs_run_at"
 
+  create_table "email_templates", :force => true do |t|
+    t.string "subject",  :limit => 75, :null => false
+    t.text   "content",                :null => false
+    t.string "from",     :limit => 20
+    t.string "reply_to", :limit => 20
+  end
+
   create_table "external_author_names", :force => true do |t|
     t.integer  "external_author_id", :null => false
     t.string   "name"
@@ -400,7 +509,7 @@ ActiveRecord::Schema.define(:version => 20121129192353) do
     t.text     "summary"
     t.boolean  "hidden_by_admin",                        :default => false, :null => false
     t.integer  "summary_sanitizer_version", :limit => 2, :default => 0,     :null => false
-    t.integer  "language_id"
+    t.integer  "language_id",                            :default => 1
   end
 
   create_table "feedbacks", :force => true do |t|
@@ -429,8 +538,7 @@ ActiveRecord::Schema.define(:version => 20121129192353) do
   add_index "filter_counts", ["public_works_count"], :name => "index_public_works_count"
   add_index "filter_counts", ["unhidden_works_count"], :name => "index_unhidden_works_count"
 
-  create_table "filter_taggings", :id => false, :force => true do |t|
-    t.integer  "id",                                                :null => false
+  create_table "filter_taggings", :force => true do |t|
     t.integer  "filter_id",       :limit => 8,                      :null => false
     t.integer  "filterable_id",   :limit => 8,                      :null => false
     t.string   "filterable_type", :limit => 100
@@ -598,6 +706,11 @@ ActiveRecord::Schema.define(:version => 20121129192353) do
 
   add_index "meta_taggings", ["meta_tag_id"], :name => "index_meta_taggings_on_meta_tag_id"
   add_index "meta_taggings", ["sub_tag_id"], :name => "index_meta_taggings_on_sub_tag_id"
+
+  create_table "notices", :force => true do |t|
+    t.string "name",    :limit => 20
+    t.text   "content"
+  end
 
   create_table "open_id_authentication_associations", :force => true do |t|
     t.integer "issued"
@@ -953,6 +1066,14 @@ ActiveRecord::Schema.define(:version => 20121129192353) do
     t.datetime "updated_at"
   end
 
+  create_table "skin_parents_copy", :force => true do |t|
+    t.integer  "child_skin_id"
+    t.integer  "parent_skin_id"
+    t.integer  "position"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "skins", :force => true do |t|
     t.string   "title"
     t.integer  "author_id"
@@ -1046,14 +1167,14 @@ ActiveRecord::Schema.define(:version => 20121129192353) do
   end
 
   create_table "tag_set_nominations", :force => true do |t|
-    t.integer  "pseud_id"
+    t.integer  "user_id"
     t.integer  "owned_tag_set_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
   create_table "tag_set_ownerships", :force => true do |t|
-    t.integer  "pseud_id"
+    t.integer  "user_id"
     t.integer  "owned_tag_set_id"
     t.boolean  "owner",            :default => false, :null => false
     t.datetime "created_at"
@@ -1101,6 +1222,22 @@ ActiveRecord::Schema.define(:version => 20121129192353) do
   add_index "tags", ["sortable_name"], :name => "index_tags_on_sortable_name"
   add_index "tags", ["type"], :name => "index_tags_on_type"
 
+  create_table "user_default_pseud", :id => false, :force => true do |t|
+    t.integer "id",       :default => 0, :null => false
+    t.string  "email"
+    t.string  "login"
+    t.integer "pseud_id", :default => 0, :null => false
+  end
+
+  create_table "user_imports", :force => true do |t|
+    t.integer  "user_id"
+    t.integer  "pseud_id"
+    t.integer  "archive_import_id"
+    t.integer  "source_user_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "user_invite_requests", :force => true do |t|
     t.integer  "user_id"
     t.integer  "quantity"
@@ -1113,6 +1250,11 @@ ActiveRecord::Schema.define(:version => 20121129192353) do
 
   add_index "user_invite_requests", ["user_id"], :name => "index_user_invite_requests_on_user_id"
 
+  create_table "user_notices", :id => false, :force => true do |t|
+    t.integer "user_id",   :null => false
+    t.integer "notice_id", :null => false
+  end
+
   create_table "users", :force => true do |t|
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -1122,19 +1264,31 @@ ActiveRecord::Schema.define(:version => 20121129192353) do
     t.datetime "activated_at"
     t.string   "crypted_password"
     t.string   "salt"
-    t.boolean  "recently_reset",                    :default => false, :null => false
-    t.boolean  "suspended",                         :default => false, :null => false
-    t.boolean  "banned",                            :default => false, :null => false
+    t.boolean  "recently_reset",     :default => false, :null => false
+    t.boolean  "suspended",          :default => false, :null => false
+    t.boolean  "banned",             :default => false, :null => false
     t.integer  "invitation_id"
     t.datetime "suspended_until"
-    t.boolean  "out_of_invites",                    :default => true,  :null => false
-    t.string   "persistence_token",                                    :null => false
+    t.boolean  "out_of_invites",     :default => true,  :null => false
+    t.string   "persistence_token",                     :null => false
     t.integer  "failed_login_count"
+    t.integer  "status",             :default => 10
   end
 
   add_index "users", ["activation_code"], :name => "index_users_on_activation_code"
   add_index "users", ["email"], :name => "index_users_on_email"
   add_index "users", ["login"], :name => "index_users_on_login", :unique => true
+
+  create_table "work_imports", :force => true do |t|
+    t.integer  "work_id"
+    t.integer  "pseud_id"
+    t.integer  "archive_import_id"
+    t.integer  "source_work_id"
+    t.integer  "source_user_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "source_url",        :limit => 75
+  end
 
   create_table "work_links", :force => true do |t|
     t.integer  "work_id"
@@ -1175,7 +1329,9 @@ ActiveRecord::Schema.define(:version => 20121129192353) do
     t.integer  "endnotes_sanitizer_version",  :limit => 2, :default => 0,     :null => false
     t.integer  "work_skin_id"
     t.boolean  "in_anon_collection",                       :default => false, :null => false
+    t.integer  "redirect_work_id",                         :default => 0,     :null => false
     t.boolean  "in_unrevealed_collection",                 :default => false, :null => false
+    t.boolean  "anon_commenting_disabled",                 :default => false, :null => false
   end
 
   add_index "works", ["complete", "posted", "hidden_by_admin"], :name => "complete_works"
