@@ -231,6 +231,16 @@ class Collection < ActiveRecord::Base
   end
   ## END AUTOCOMPLETE
 
+  def self.search(options={})
+    tire.search(page: options[:page], per_page: ArchiveConfig.ITEMS_PER_PAGE, load: true) do
+      query do
+        boolean do
+          must { string options[:query], default_operator: "AND" } if options[:query].present?
+          must { term :collection_ids, options[:collection_id] } if options[:collection_id].present?
+        end
+      end
+    end
+  end
   
   def parent_name=(name)
     @parent_name = name

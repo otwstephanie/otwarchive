@@ -1,0 +1,15 @@
+<%= form_tag url_for(:controller => 'collections', :action => 'search'), :class => 'search', :role => 'search', :method => :get do %>
+  <fieldset>
+    <legend>Search people</legend>
+    <dl>
+      <dt>
+        <label for="collection_search"><%= ts('Name or description:') %></label>
+        <%= link_to_help "collection-search-name-help" %>
+      </dt>
+      <dd>
+        <%= text_field_tag :query, params[:query], :id => 'collection_search'  %>
+      </dd>
+    </dl>
+    <p class="submit actions"><%= submit_tag ts('Search collections'), :name => nil %></p>
+  </fieldset>
+<% end %>

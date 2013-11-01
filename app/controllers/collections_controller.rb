@@ -15,6 +15,20 @@ class CollectionsController < ApplicationController
     end
   end
 
+  def do_search
+    options = { :query => params[:query], :page => params[:page] || 1 }
+
+    @collections = Collection.search(options)
+    # TODO: move to search index
+
+  end
+
+  def search
+    if params[:query].present?
+      do_search
+    end
+  end
+
   def index
     if params[:work_id] && (@work = Work.find_by_id(params[:work_id]))
       @collections = @work.approved_collections.by_title.paginate(:page => params[:page])

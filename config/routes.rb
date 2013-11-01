@@ -15,6 +15,9 @@ Otwarchive::Application.routes.draw do
 
   namespace 'static' do
     resources :collections, :only => [:show] do
+      collection do
+        get :search
+      end
       resources :media, :only => [:show]
       resources :fandoms, :only => [:index, :show]
       resources :works, :only => [:show]
