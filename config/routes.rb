@@ -15,9 +15,7 @@ Otwarchive::Application.routes.draw do
 
   namespace 'static' do
     resources :collections, :only => [:show] do
-      collection do
-        get :search
-      end
+
       resources :media, :only => [:show]
       resources :fandoms, :only => [:index, :show]
       resources :works, :only => [:show]
@@ -204,7 +202,9 @@ Otwarchive::Application.routes.draw do
         put :update_multiple
       end
     end
-    resources :collections, :only => [:index]
+    resources :collections, :only => [:index] do
+
+    end
     resources :comments do
       member do
         put :approve
@@ -345,6 +345,7 @@ Otwarchive::Application.routes.draw do
       get :list_challenges
       get :list_ge_challenges
       get :list_pm_challenges
+      get :search
     end
     resource  :profile, :controller => "collection_profile"
     resources :collections
