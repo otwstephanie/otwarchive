@@ -11,7 +11,7 @@ class SerialWorksController < ApplicationController
   # DELETE /related_works/1
   # DELETE /related_works/1.xml
   def destroy
-    @serial
+
     @serial_work.destroy
     redirect_to series_path(@serial_work.series)
   end
