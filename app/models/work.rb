@@ -258,18 +258,10 @@ class Work < ActiveRecord::Base
       redirects = Work.find_by_redirect_work_id(self.redirect_work_id)
       if !redirects.nil?
         if redirects.kind_of?(Array)
-          redirects.each do |r|
-            if r.redirect_work_id != 0
-              r.destroy
-            end
-          end
+          redirects.each {|r| r.destroy}
         else
-          if r.redirect_work_id !=0
             r.destroy
-          end
-
         end
-
       end
     end
   end
