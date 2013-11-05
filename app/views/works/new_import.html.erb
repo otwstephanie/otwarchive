@@ -63,15 +63,11 @@
   
   <% if current_user.archivist %>
             <dt class="others">
-              <%= check_box_tag "others-options-show", "1",  :class => "toggle_formfield" %> Importing for others
+              <%= check_box_tag "importing_for_others", "0",  :class => "toggle_formfield" %> Importing for others
             </dt>
 
             <dd class="others">
               <ul>
-                <li>
-                  <%= check_box_tag "importing_for_others" %>
-                  <%= label_tag "importing_for_others", ts("Import for others ONLY with permission") %>
-                </li>
                 <li>
                   <%= text_field_tag_original "e_name" %>
                   <%= label_tag "e_name", ts("Author Name") %>
