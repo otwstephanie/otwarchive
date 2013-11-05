@@ -29,16 +29,13 @@
 
 <!--/descriptions-->
 
-
-
 <!-- This partial renders a form for importing a work from an existing URL -->
 
 
-  
   <%= form_tag url_for(:controller => :works, :action => :import), :class => "verbose import work post" do %>
-    <p class="required notice"><%= ts('* Required information') %></p>
+  <p class="required notice"><%= ts('* Required information') %></p>
 
-    <fieldset>
+  <fieldset>
   <legend><%= ts("Import Options") %></legend>
   <dl>
     <dt class="required"><%= label_tag "urls", ts("URLs*") %></dt>
@@ -61,52 +58,70 @@
 
     <%= label_tag "encoding", ts("Set custom encoding") %> <%= link_to_help "encoding-help" %></dt> 
     <dd><%= select_tag "encoding", options_for_select([''] + Encoding.name_list.sort) %></dd>
-	<dt>Preferences</dt>
-	<dd>
-	<ul>
+
 
   
   <% if current_user.archivist %>
-      <li>
-        <%= check_box_tag "importing_for_others" %>
-        <%= label_tag "importing_for_others", ts("Import for others ONLY with permission") %>
-      </li>
-      <li>
-        <%= text_field_tag_original "e_name" %>
-        <%= label_tag "e_name", ts("Author Name") %>
-      </li>
-      <li>
-        <%= text_field_tag_original "e_email" %>
-        <%= label_tag "e_email", ts("Email Address") %>
-      </li>
+            <dt class="others">
+              <%= check_box_tag "others-options-show", "1",  :class => "toggle_formfield" %> Importing for others
+            </dt>
+
+            <dd class="others">
+              <ul>
+                <li>
+                  <%= check_box_tag "importing_for_others" %>
+                  <%= label_tag "importing_for_others", ts("Import for others ONLY with permission") %>
+                </li>
+                <li>
+                  <%= text_field_tag_original "e_name" %>
+                  <%= label_tag "e_name", ts("Author Name") %>
+                </li>
+                <li>
+                <%= text_field_tag_original "e_email" %>
+                <%= label_tag "e_email", ts("Author Email Address") %>
+              </li>
+                <li>
+                  <%= text_field_tag_original "ec_name" %>
+                  <%= label_tag "ec_name", ts("CoAuthor Name") %>
+                </li>
+                <li>
+                  <%= text_field_tag_original "ec_email" %>
+                  <%= label_tag "ec_email", ts("CoAuthor Email Address") %>
+                </li>
+              </ul>
+            </dd>
+
   <% end %>
 
-  <li>
-    <%= check_box_tag "post_without_preview" %>
-    <% if current_user.archivist %>
-      <%= label_tag "post_without_preview", ts("Post without previewing (STRONGLY recommended if importing for others!)") %>
-    <% else %>
-      <%= label_tag "post_without_preview", ts("Post without previewing.") %>
-    <% end %>
-  </li>
+    <dt>Preferences</dt>
+    <dd>
+      <ul>
+      <li>
+        <%= check_box_tag "post_without_preview" %>
+        <% if current_user.archivist %>
+          <%= label_tag "post_without_preview", ts("Post without previewing (STRONGLY recommended if importing for others!)") %>
+        <% else %>
+          <%= label_tag "post_without_preview", ts("Post without previewing.") %>
+        <% end %>
+      </li>
 
-  <li>
-    <%= check_box_tag "restricted" %>
-    <%= label_tag "restricted", ts("Lock all imports to registered users only.") %>
-  </li>
+      <li>
+        <%= check_box_tag "restricted" %>
+        <%= label_tag "restricted", ts("Lock all imports to registered users only.") %>
+      </li>
 
-  <li>
-    <%= check_box_tag "override_tags" %>
-    <%= label_tag "override_tags", ts("Set the following tags on all stories, overriding whatever the importer finds.") %>
-  </li>
-  <li>
-    <%= check_box_tag "enforce_blanks" %>
-    <%= label_tag "enforce_blanks", ts("If you wish to tag the work with the information entered here, leaving anything not filled out blank, check me.") %>
-  </li>
-</ul>
-</dd>
-</dl>
-</fieldset>
+      <li>
+        <%= check_box_tag "override_tags" %>
+        <%= label_tag "override_tags", ts("Set the following tags on all stories, overriding whatever the importer finds.") %>
+      </li>
+      <li>
+        <%= check_box_tag "enforce_blanks" %>
+        <%= label_tag "enforce_blanks", ts("If you wish to tag the work with the information entered here, leaving anything not filled out blank, check me.") %>
+      </li>
+    </ul>
+    </dd>
+    </dl>
+    </fieldset>
 
 <%= render :partial => 'work_form_tags', :locals => {:include_blank => true} %>
 <%= render :partial => 'work_import_associations', :locals => {:include_blank => true} %>
@@ -120,3 +135,13 @@
 
 <% end %>
 
+<%= content_for :footer_js do %>
+    <%= javascript_tag do %>
+        $j(document).ready(function(){
+        $j(".toggle_formfield").click(function() {
+        var targetId = $j(this).attr("id").replace("-show", "");
+        toggleFormField(targetId);
+        });
+        })
+    <% end %>
+<% end %>
