@@ -71,16 +71,7 @@
    <dt>
     <%= label_tag "encoding", ts("Set custom encoding") %> <%= link_to_help "encoding-help" %></dt> 
     <dd><%= select_tag "encoding", options_for_select([''] + Encoding.name_list.sort) %></dd>
-	<dt>Preferences</dt>
-	<dd>
-	<ul>
-	<li><%= radio_button_tag "import_multiple", "works", true %>
-    <%= label_tag "import_multiple_works", ts("Works (limit of %{max})", :max => current_user.archivist ? ArchiveConfig.IMPORT_MAX_WORKS_BY_ARCHIVIST : ArchiveConfig.IMPORT_MAX_WORKS) %>
-    </li>
-    <li><%= radio_button_tag "import_multiple", "chapters" %>
-    <%= label_tag "import_multiple_chapters", ts("Chapters in a single work (limit of %{max})", :max => ArchiveConfig.IMPORT_MAX_CHAPTERS) %>
-  </li>
-  
+
   <% if current_user.archivist %>
             <dt class="others">
               <%= check_box_tag "others-options-show", "1",  :class => "toggle_formfield" %> Importing for others
@@ -117,17 +108,32 @@
     <dd>
       <ul>
       <li>
-        <%= check_box_tag "importing_for_others" %>
-        <%= label_tag "importing_for_others", ts("Import for others ONLY with permission") %>
+        <%= check_box_tag "post_without_preview" %>
+        <% if current_user.archivist %>
+          <%= label_tag "post_without_preview", ts("Post without previewing (STRONGLY recommended if importing for others!)") %>
+        <% else %>
+          <%= label_tag "post_without_preview", ts("Post without previewing.") %>
+        <% end %>
       </li>
       <li>
-        <%= text_field_tag_original "e_name" %>
-        <%= label_tag "e_name", ts("Author Name") %>
+        <%= check_box_tag "restricted" %>
+        <%= label_tag "restricted", ts("Lock all imports to registered users only.") %>
       </li>
       <li>
-        <%= text_field_tag_original "e_email" %>
-        <%= label_tag "e_email", ts("Email Address") %>
+        <%= check_box_tag "override_tags" %>
+        <%= label_tag "override_tags", ts("Set the following tags on all stories, overriding whatever the importer finds.") %>
       </li>
+<<<<<<< HEAD
+      <li>
+        <%= check_box_tag "enforce_blanks" %>
+        <%= label_tag "enforce_blanks", ts("If you wish to tag the work with the information entered here, leaving anything not filled out blank, check me.") %>
+      </li>
+    </ul>
+    </dd>
+    </dl>
+    </fieldset>
+=======
+
   <% end %>
 
 <%= render :partial => 'work_form_tags', :locals => {:include_blank => true} %>
@@ -140,7 +146,7 @@
   </p>
 </fieldset>
 
-<% end %>
+
 
 <%= content_for :footer_js do %>
     <%= javascript_tag do %>
