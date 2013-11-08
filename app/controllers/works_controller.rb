@@ -790,7 +790,7 @@ public
   end
 
   def load_work
-    @work = Work.find_by_id(params[:id])
+    @work = Work.find_by_id(params[:id],:include => [:collections,:pseuds,:users,:chapters])
     if @work.nil?
       flash[:error] = ts("Sorry, we couldn't find the work you were looking for.")
       redirect_to root_path and return
