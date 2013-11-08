@@ -128,8 +128,7 @@ Feature: Create Works
       And I should see "Fandom: Supernatural"
       And I should see "Rating: Not Rated"
       And I should see "No Archive Warnings Apply"
-      And "warning redesign" is fixed
-      #And I should not see "Choose Not To Use Archive Warnings"
+      And I should not see "Choose Not To Use Archive Warnings"
       And I should see "Category: F/M"
       And I should see "Characters: Sam Winchester, Dean Winchester"
       And I should see "Relationship: Harry/Ginny"
@@ -251,6 +250,7 @@ Feature: Create Works
     Given basic tags
       And I am logged in
       And I go to the new work page
+      And I check "No Archive Warnings Apply"
       And I fill in "Fandoms" with "Supernatural, Smallville"
       And I fill in "Work Title" with "02138"
       And I fill in "content" with "Bad things happen, etc."
@@ -265,6 +265,7 @@ Feature: Create Works
     Given basic tags
     When I am logged in as "newbie" with password "password"
       And I go to the new work page
+      And I check "No Archive Warnings Apply"
       And I fill in "Fandoms" with "Supernatural"
       And I fill in "Work Title" with "4 > 3 and 2 < 5"
       And I fill in "content" with "Bad things happen, etc."
@@ -319,3 +320,20 @@ Feature: Create Works
   Then I should see "Post New Work"
     And I should see "Rich text" within "a#richTextLink"
     And I should see "HTML" within "a#plainTextLink"
+      
+    Scenario: Users must set something as a warning and Author Chose Not To Use Archive Warnings should not be added automatically
+    Given basic tags
+      And I am logged in as "triggerfinger" with password "everyoneinthephonebook"
+    When I go to the new work page
+      And I fill in "Fandoms" with "Dallas"
+      And I fill in "Work Title" with "I Shot J.R.: Kristen's Story"
+      And I fill in "content" with "It wasn't my fault, you know."
+      And I press "Post Without Preview"
+    Then I should see "We couldn't save this Work"
+      And I should see "Please add all required tags. Warning is missing."
+    When I check "No Archive Warnings Apply"
+      And I press "Post Without Preview"
+    Then I should see "Work was successfully posted."
+      And I should see "No Archive Warnings Apply"
+      And I should not see "Author Chose Not To Use Archive Warnings"
+      And I should see "It wasn't my fault, you know."

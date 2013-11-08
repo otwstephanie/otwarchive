@@ -306,11 +306,14 @@ class WorksController < ApplicationController
           render :_choose_coauthor
         else
           unless @work.has_required_tags?
+            error_message = "Please add all required tags."
             if @work.fandoms.blank?
-              @work.errors.add(:base, "Please add all required tags. Fandom is missing.")
-            else
-              @work.errors.add(:base, "Required tags are missing.")
+              error_message << " Fandom is missing."
             end
+            if @work.warnings.blank?
+              error_message << " Warning is missing."
+            end
+            @work.errors.add(:base, error_message)           
           end
           render :new
         end
@@ -509,52 +512,6 @@ class WorksController < ApplicationController
     end
   end
 
-  def merge_work_page
-    render :merge_work and return
-  end
-
-  def _check_merge_ownership(work_a,work_b)
-    create_a = Creatorship.find_by_creation_id_and_creation_type(work_a.id,'Work')
-    create_b = Creatorship.find_by_creation_id_and_creation_type(work_b.id,'Work')
-    create_a.pseud.user_id == create_b.pseud.user_id
-  end
-
-  def merge_work
-    @work = Work.find(params[:id])
-    if params[:target_id].nil? || params[:target_id].blank?
-      setflash; flash.now[:error] = ts("You must provide a target work id. ")
-      render :merge_work and return
-    else
-      @target_id = params[:target_id]
-    end
-
-    begin
-      @target_work = Work.find(@target_id)
-    rescue
-      setflash; flash.now[:error] = ts("We can not find the work with id #{@target_id}. Please Check your input and try again.")
-      render :merge_work and return
-    end
-
-    if @target_work == nil
-      setflash; flash.now[:error] = ts("We can not find the work with id #{@target_id}. Please Check your input and try again.")
-      render :merge_work and return
-    end
-
-    #Check Ownership
-    if _check_merge_ownership(@work,@target_work)
-      @work.merge(@target_id)
-      Work.tire.index.remove @work
-      redirect_to work_path(@target_id)
-    else
-      setflash; flash.now[:error] = ts("Sorry you do not own the target work. You can only merge works you own.")
-      render :merge_work and return
-    end
-
-  end
-
-
-
-=begin
   # POST /works/import
   def import
     # check to make sure we have some urls to work with
@@ -596,62 +553,6 @@ class WorksController < ApplicationController
       :category => params[:work][:category_string],
       :freeform => params[:work][:freeform_string],
       :encoding => params[:encoding]
-    }
-
-    # now let's do the import
-    if params[:import_multiple] == "works" && @urls.length > 1
-      import_multiple(@urls, options)
-    else # a single work possibly with multiple chapters
-      import_single(@urls, options)
-    end
-
-  end
-=end
-
-
-  # POST /works/import
-  def import
-    # check to make sure we have some urls to work with
-    @urls = params[:urls].split
-    unless @urls.length > 0
-      flash.now[:error] = ts("Did you want to enter a URL?")
-      render :new_import and return
-    end
-
-    # is this an archivist importing?
-    if params[:importing_for_others] && !current_user.archivist
-      flash.now[:error] = ts("You may not import stories by other users unless you are an approved archivist.")
-      render :new_import and return
-    end
-
-    # make sure we're not importing too many at once
-    if params[:import_multiple] == "works" && (!current_user.archivist && @urls.length > ArchiveConfig.IMPORT_MAX_WORKS || @urls.length > ArchiveConfig.IMPORT_MAX_WORKS_BY_ARCHIVIST)
-      flash.now[:error] = ts("You cannot import more than %{max} works at a time.", :max => current_user.archivist ? ArchiveConfig.IMPORT_MAX_WORKS_BY_ARCHIVIST : ArchiveConfig.IMPORT_MAX_WORKS)
-      render :new_import and return
-    elsif params[:import_multiple] == "chapters" && @urls.length > ArchiveConfig.IMPORT_MAX_CHAPTERS
-      flash.now[:error] = ts("You cannot import more than %{max} chapters at a time.", :max => ArchiveConfig.IMPORT_MAX_CHAPTERS)
-      render :new_import and return
-    end
-
-    # otherwise let's build the options
-    if params[:pseuds_to_apply]
-      pseuds_to_apply = Pseud.find_by_name(params[:pseuds_to_apply])
-    end
-    options = {:pseuds => pseuds_to_apply,
-               :post_without_preview => params[:post_without_preview],
-               :importing_for_others => params[:importing_for_others],
-               :restricted => params[:restricted],
-               :override_tags => params[:override_tags],
-               :fandom => params[:work][:fandom_string],
-               :warning => params[:work][:warning_strings],
-               :character => params[:work][:character_string],
-               :rating => params[:work][:rating_string],
-               :relationship => params[:work][:relationship_string],
-               :category => params[:work][:category_string],
-               :freeform => params[:work][:freeform_string],
-               :encoding => params[:encoding],
-               :e_name => params[:e_name],
-               :e_email => params[:e_email]
     }
 
     # now let's do the import
@@ -892,20 +793,12 @@ public
   end
 
   def load_work
-    @work = Work.find_by_id(params[:id],:include => [:collections,:pseuds,:users,:chapters])
+    @work = Work.find_by_id(params[:id])
     if @work.nil?
       flash[:error] = ts("Sorry, we couldn't find the work you were looking for.")
       redirect_to root_path and return
     elsif @collection && !@work.collections.include?(@collection)
-      #if redirect id > 0 (0 being default value) then get work specified instead
-      #ie. work was merged with another
-      if @work.redirect_work_id > 1
-        params[:id] = @work.redirect_work_id
-        @work = Work.find(@work.redirect_work_id)
-      else
-        redirect_to @work and return
-      end
-
+      redirect_to @work and return
     end
     @check_ownership_of = @work
     @check_visibility_of = @work
