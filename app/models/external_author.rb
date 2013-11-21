@@ -115,11 +115,11 @@ class ExternalAuthor < ActiveRecord::Base
       work.chapters.each do |c|
         c.creatorship.delete
       end
-end
-
-      work.destroy
     end
+
+     work.destroy
   end
+
 
   def block_import
     self.do_not_import = true
