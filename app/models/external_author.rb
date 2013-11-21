@@ -120,7 +120,10 @@ class ExternalAuthor < ActiveRecord::Base
   def delete_works
     self.external_work_creatorships.each do |external_creatorship|
       work = external_creatorship.creation
-      work.chapters.each |c| c.creatorship.delete }
+      work.chapters.each do |c|
+        c.creatorship.delete
+      end
+end
 
       work.destroy
     end
