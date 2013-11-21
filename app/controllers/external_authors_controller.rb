@@ -72,6 +72,16 @@ class ExternalAuthorsController < ApplicationController
     end
       
     @external_author = @invitation.external_author
+    if @external_author.external_creatorships.count = 0
+      if logged_in?
+        flash[:error] = ts("There are no stories to be claimed.")
+        redirect_to user_work_path and return
+      else
+        flash[:error] = ts("There are no stories to be claimed.")
+        redirect_to root_path and return
+      end
+
+    end
     unless @external_author
       flash[:error] = ts("There are no stories to claim on this invitation. Did you want to sign up instead?")
       redirect_to signup_path(@invitation.token) and return
