@@ -69,9 +69,14 @@ class ExternalAuthorsController < ApplicationController
       flash[:error] = ts("You need an invitation to do that.")
       redirect_to root_path and return
     end
-      
+    external_work_count = 0
     @external_author = @invitation.external_author
-    if @external_author.external_creatorships.count = 0
+    @external_author.external_author_names.each do |name|
+      external_works = ExternalCreatorship.find_all_by_external_author_name_id(name.id)
+      external_work_count += external_works.count
+    end
+
+    if external_work_count == 0
       if logged_in?
         flash[:error] = ts("There are no stories to be claimed.")
         redirect_to user_work_path and return
