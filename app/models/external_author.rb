@@ -131,7 +131,10 @@ class ExternalAuthor < ActiveRecord::Base
       work = external_creatorship.creation
 
 
-      work.chapters.each |c| c.creatorship.delete }
+      work.chapters.each do |c|
+      c.creatorship.delete
+
+    end
       work.destroy
       external_creatorship.delete
     end
