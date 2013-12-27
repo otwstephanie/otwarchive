@@ -12,7 +12,7 @@ gem 'rails', '3.2.13'
 # Database
 # gem 'sqlite3-ruby', :require => 'sqlite3'
 gem 'mysql2'
-
+gem 'mysql'
 # Version of redis-rb gem
 # We are currently running Redis 2.6.4 (12/6/2012)
 gem 'redis', ">=3.0"

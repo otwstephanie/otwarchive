@@ -1,0 +1,69 @@
+<!--Descriptive page name, messages and instructions-->
+<h2 class="heading"><%= ts('New Mass Import') %></h2>
+<!--/descriptions-->
+
+<!--main content-->
+<%= form_for @admin_import, url: opendoors_imports_path do |f| %>
+    <%= error_messages_for @admin_import %>
+    <dl>
+      <dt><%= f.label :import_name, "Name for this import (no spaces)" %> </dt>
+      <dd><%= f.text_field :import_name, :size => "30" %></dd>
+      <dt><%= f.label :create_archive_record, "Create archive import record?" %></dt>
+      <dd><%= f.check_box :create_archive_record %> </dd>
+      <dt><%= f.label :source_type, "Source archive type" %> </dt>
+      <dd><%= f.text_field :source_type, :size => "30" %></dd>
+      <dt><%= f.label :database_username, "Target database username" %> </dt>
+      <dd><%= f.text_field :database_username, :size => "30" %></dd>
+      <dt><%= f.label :database_password, "Target database password" %> </dt>
+      <dd><%= f.text_field :database_host, :size => "30" %></dd>
+      <dt><%= f.label :database_host, "Target database host" %> </dt>
+      <dd><%= f.text_field :database_name, :size => "40" %></dd>
+      <dt><%= f.label :database_name, "Target database name" %> </dt>
+      <dd><%= f.text_field :database_name, :size => "30" %></dd>
+      <dt><%= f.label :temp_table_prefix, "Temporary Table Prefix" %> </dt>
+      <dd><%= f.text_field :temp_table_prefix, :size => "30" %></dd>
+      <dt><%= f.label :source_table_prefix, "Source Table Prefix" %> </dt>
+      <dd><%= f.text_field :source_table_prefix, :size => "30" %></dd>
+      <dt><%= f.label :import_fandom, "Fandom string for import" %> </dt>
+      <dd><%= f.text_field :import_fandom, :size => "40" %></dd>
+      <dt><%= f.label :source_warning_class, "if applicable, class id for source warnings" %> </dt>
+      <dd><%= f.text_field :source_warning_class, :size => "10" %></dd>
+      <dt><%= f.label :create_collection, "Create parent collection for import?" %></dt>
+      <dd><%= f.check_box :create_collection %> </dd>
+      <dt><%= f.label :new_collection_id, "Parent Collection ID (leave blank)" %> </dt>
+      <dd><%= f.text_field :new_collection_id, :size => "30" %></dd>
+      <dt><%= f.label :new_collection_owner, "Parent Collection Owner" %> </dt>
+      <dd><%= f.text_field :new_collection_owner, :size => "30" %></dd>
+      <dt><%= f.label :new_collection_title, "Parent Collection Title" %> </dt>
+      <dd><%= f.text_field :new_collection_title, :size => "40" %></dd>
+      <dt><%= f.label :new_collection_name, "Parent Collection Short Name (no spaces)" %> </dt>
+      <dd><%= f.text_field :new_collection_name, :size => "30" %></dd>
+      <dt><%= f.label :new_collection_description, "Parent Collection Description" %> </dt>
+      <dd><%= f.text_field :new_collection_description, :size => "30" %></dd>
+
+      <dt><%= f.label :categories_as_collections, "Convert categories to subcollections of parent?" %></dt>
+      <dd><%= f.check_box :categories_as_collections %></dd>
+
+      <dt><%= f.label :import_reviews, "Import reviews?" %></dt>
+      <dd><%= f.check_box :import_reviews %></dd>
+
+      <dt><%= f.label :notify_imported_users, "Notify imported users by email?" %></dt>
+      <dd><%= f.check_box :notify_imported_users %></dd>
+      <dt><%= f.label :existing_user_email_id, "Message for existing users with new imported stories" %> </dt>
+      <dd><%= f.text_field :existing_user_email_id, :size => "8" %></dd>
+      <dt><%= f.label :new_user_email_id, "Message for new users with imported stories" %></dt>
+      <dd><%= f.text_field :new_user_email_id, :size => "8" %></dd>
+      <dt><%= f.label :existing_user_notice_id, "notice for existing users with new imported stories" %> </dt>
+      <dd><%= f.text_field :existing_user_notice_id, :size => "8" %></dd>
+      <dt><%= f.label :new_user_notice_id, "notice for new users with imported stories" %></dt>
+      <dd><%= f.text_field :new_user_notice_id, :size => "8" %></dd>
+
+
+    </dl>
+
+    <p class="submit actions"><%= f.submit 'Update' %></p>
+<% end %>
+<hr class="clear" />
+
+
+<!--/content-->

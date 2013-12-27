@@ -11,11 +11,24 @@ class RedirectController < ApplicationController
     # strip it down to the most basic URL
     @minimal_url = @original_url.gsub(/\?.*$/, "").gsub(/\#.*$/, "")
 
+    #adding if to check for https
+    #stephanie 10-29-13
+
+    #set default non https values
+    _no_www_string = /http:\/\/www\./
+    _with_www_string = /http:\/\//
+    _protocol_string = "http://"
+
+    if @original_url.downcase.include?("https")
+      _protocol_string = "https://"
+      _no_www_string = /https:\/\/www\./
+      _with_www_string = /http:\/\//
+    end
     # remove www if present
-    @no_www_url = @original_url.gsub(/http:\/\/www\./, "http://")
+    @no_www_url = @original_url.gsub(_no_www_string, _protocol_string)
 
     # add www in case it is needed
-    @with_www_url = @original_url.gsub(/http:\/\//, "http://www.")
+    @with_www_url = @original_url.gsub(_with_www_string, "#{_protocol_string}www.")
 
     # get encoded and unencoded versions
     @encoded_url = URI.encode(@minimal_url)
