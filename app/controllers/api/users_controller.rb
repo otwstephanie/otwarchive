@@ -25,12 +25,12 @@ class Api::UsersController < ApplicationController
 
   def create
     @user = User.new(params[:user])
-      @user.login = params[:user][:login]
+      @user.login = "testinguser"
       @user.email = params[:user][:email]
       @user.age_over_13 = 1
       @user.terms_of_service = 1
-      @user.password = params[:user][:password] if params[:user][:password]
-      @user.password_confirmation = params[:user][:password_confirmation] if params[:user][:password_confirmation]
+      @user.password = "Test"
+      @user.password_confirmation = "Test"
       @user.activation_code = Digest::SHA1.hexdigest( Time.now.to_s.split(//).sort_by {rand}.join )
 
     respond_to do |format|
