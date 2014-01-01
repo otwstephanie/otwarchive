@@ -1,4 +1,8 @@
 Otwarchive::Application.routes.draw do
+
+  namespace :api do
+    resources :users, :defaults => { :format => 'xml' }
+  end
   resources :banned_values
 
   #### ERRORS ####
