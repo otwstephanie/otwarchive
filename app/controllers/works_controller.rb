@@ -538,8 +538,7 @@ class WorksController < ApplicationController
     if params[:pseuds_to_apply]
       pseuds_to_apply = Pseud.find_by_name(params[:pseuds_to_apply])
     end
-    options = {
-      :pseuds => pseuds_to_apply,
+    options = {:pseuds => pseuds_to_apply,
       :post_without_preview => params[:post_without_preview],
       :importing_for_others => params[:importing_for_others],
       :restricted => params[:restricted],
@@ -551,11 +550,7 @@ class WorksController < ApplicationController
       :relationship => params[:work][:relationship_string],
       :category => params[:work][:category_string],
       :freeform => params[:work][:freeform_string],
-      :encoding => params[:encoding],
-      :external_author_name => params[:external_author_name],
-      :external_author_email => params[:external_author_email],
-      :external_coauthor_name => params[:external_coauthor_name],
-      :external_coauthor_email => params[:external_coauthor_email]
+      :encoding => params[:encoding]
     }
 
     # now let's do the import
@@ -611,7 +606,9 @@ class WorksController < ApplicationController
                :freeform => params[:work][:freeform_string],
                :encoding => params[:encoding],
                :external_author_name => params[:external_author_name],
-               :external_author_email => params[:external_author_email]
+               :external_author_email => params[:external_author_email],
+               :external_coauthor_name => params[:external_coauthor_name],
+               :external_coauthor_email => params[:external_coauthor_email]
     }
 
     # now let's do the import
@@ -693,7 +690,7 @@ protected
         @external_authors.each do |external_author|
           external_author.find_or_invite(current_user)
         end
-        message = " " + ts("We have notified the author(s) you imported works for. If any were missed, you can also add co-authors manually.")
+        message = " " + ts("We have notified the author(s) you imported stories for. If any were missed, you can also add co-authors manually.")
         flash[:notice] ? flash[:notice] += message : flash[:notice] = message
       end
     end
@@ -810,11 +807,7 @@ public
     @work = Work.find(params[:id])
     Reading.mark_to_read_later(@work, current_user)
     read_later_path = user_readings_path(current_user, :show => 'to-read')
-    if @work.marked_for_later?(current_user)
-      flash[:notice] = ts("This work was <strong>removed</strong> from your #{view_context.link_to('Marked for Later list', read_later_path)}. It may take a while for changes to show up.").html_safe
-    else
-      flash[:notice] = ts("This work was <strong>added</strong> to your #{view_context.link_to('Marked for Later list', read_later_path)}. It may take a while for changes to show up.").html_safe
-    end
+    flash[:notice] = ts("This work was marked for later. You can find it in your #{view_context.link_to('history', read_later_path)}. (The work may take a short while to show up there.)").html_safe
     redirect_to(request.env["HTTP_REFERER"] || root_path)
   end
 
