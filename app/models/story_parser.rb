@@ -147,15 +147,21 @@ class StoryParser
   def download_and_parse_story(location, options = {})
     check_for_previous_import(location)
     work = nil
-    source = get_source_if_known(CHAPTERED_STORY_LOCATIONS, location)
-    if source.nil?
-      story = download_text(location)
-      work = parse_story(story, location, options)
+    if  options[:data_provided] == 1
+
     else
-      work = download_and_parse_chaptered_story(source, location, options)
+      source = get_source_if_known(CHAPTERED_STORY_LOCATIONS, location)
+      if source.nil?
+        story = download_text(location)
+        work = parse_story(story, location, options)
+      else
+        work = download_and_parse_chaptered_story(source, location, options)
+      end
+
     end
     return work
-  end
+    end
+
 
   # download and add a new chapter to the end of a work
   def download_and_parse_chapter_of_work(work, location, options = {})
@@ -487,6 +493,7 @@ class StoryParser
       # end
       # return @chapter_contents
     end
+
 
 
     # grab all the chapters of a story from an efiction-based site

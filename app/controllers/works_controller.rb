@@ -511,6 +511,18 @@ class WorksController < ApplicationController
 
   # POST /works/import
   def import
+    @data_provided = params[:data_provided]
+    provided_data = nil
+
+    if @data_provided == 1
+    provided_data = {
+        :first_chapter_title => params[:first_chapter_title],
+        :first_chapter_body => params[:first_chapter_body],
+        :summary => params[:summary],
+        :data_provided => 1
+    }
+
+    end
     # check to make sure we have some urls to work with
     @urls = params[:urls].split
     unless @urls.length > 0
@@ -556,6 +568,10 @@ class WorksController < ApplicationController
       :external_coauthor_name => params[:external_coauthor_name],
       :external_coauthor_email => params[:external_coauthor_email]
     }
+
+    if @data_provided == 1
+    options = options.deep_merge(provided_data)
+    end
 
     # now let's do the import
     if params[:import_multiple] == "works" && @urls.length > 1
