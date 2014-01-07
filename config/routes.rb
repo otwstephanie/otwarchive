@@ -21,7 +21,9 @@ Otwarchive::Application.routes.draw do
       resources :restricted_works, :only => [:index, :show]
     end
   end
-  
+
+  resources :bulk_redirects
+  root to: 'works#index'
   
   #### OPEN DOORS ####
   namespace :opendoors do
@@ -284,7 +286,6 @@ Otwarchive::Application.routes.draw do
       get :marktoread
       get :confirm_delete
     end
-    resources :bulk_redirects
 
     resources :bookmarks
     resources :chapters do
@@ -307,7 +308,6 @@ Otwarchive::Application.routes.draw do
       end
     end
     resources :links, :controller => "work_links", :only => [:index]
-    root to: 'works#index'
   end
 
   resources :chapters do
