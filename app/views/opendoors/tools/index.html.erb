@@ -24,6 +24,12 @@
   </fieldset>
 <% end %>
 
+<h2>Import Products</h2>
+<%= form_tag import_products_path, multipart: true do %>
+<%= file_field_tag :file %>
+<%= submit_tag "bulk" %>
+<% end %>
+
 <%= form_for [:opendoors, @external_author] do |f| %>
   <fieldset>
     <legend>Block Email Address</legend>

@@ -7,7 +7,15 @@ class Opendoors::ToolsController < ApplicationController
     @imported_from_url = params[:imported_from_url]
     @external_author = ExternalAuthor.new
   end
-  
+
+
+  def bulk
+    def import
+      import(params[:file])
+      redirect_to root_url, notice: "Products imported."
+    end
+  end
+
   # Update the imported_from_url value on an existing AO3 work
   # This is not RESTful but is IMO a better idea than setting up a works controller under the opendoors namespace,
   # since the functionality we want to provide is so limited.

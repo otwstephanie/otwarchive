@@ -1,0 +1,34 @@
+<h1>Bulk Redirect Update</h1>
+
+<p>A CSV or Excel file can be used to bulk update redirect records. The first row should be the column name. The following columns are allowed.</p>
+
+<ul>
+  <% Work.columns.each do |column| %>
+      <% if column.name.in? ["id", *Work.accessible_attributes] %>
+          <li>
+            <strong><%= column.name %></strong> -
+            <%= column.type.to_s.titleize %> type
+          </li>
+      <% end %>
+  <% end %>
+</ul>
+
+
+
+<%= form_for @bulk_redirect do |f| %>
+    <% if @bulk_redirect.errors.any? %>
+        <div id="error_explanation">
+          <h2><%= pluralize(@bulk_redirect.errors.count, "error") %> prohibited this update from completing:</h2>
+          <ul>
+            <% @bulk_redirect.errors.full_messages.each do |msg| %>
+                <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+    <% end %>
+
+    <div class="field">
+      <%= f.file_field :file %>
+    </div>
+    <div class="buttons"><%= f.submit "bulk" %></div>
+<% end %>

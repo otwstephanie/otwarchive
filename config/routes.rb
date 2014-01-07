@@ -28,7 +28,9 @@ Otwarchive::Application.routes.draw do
     resources :tools, :only => [:index] do
       collection do 
         post :url_update
+        post :bulk
       end
+      root to: 'tools#index'
     end
     resources :external_authors do
       member do
@@ -282,6 +284,8 @@ Otwarchive::Application.routes.draw do
       get :marktoread
       get :confirm_delete
     end
+    resources :bulk_redirects
+
     resources :bookmarks
     resources :chapters do
       collection do
@@ -302,7 +306,8 @@ Otwarchive::Application.routes.draw do
         put :reject
       end
     end
-    resources :links, :controller => "work_links", :only => [:index]          
+    resources :links, :controller => "work_links", :only => [:index]
+    root to: 'works#index'
   end
 
   resources :chapters do

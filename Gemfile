@@ -37,6 +37,9 @@ gem 'tire'
 gem 'aws-sdk'
 gem 'css_parser'
 
+#for minipulating csv / xls / xlsx
+gem 'roo'
+
 gem 'cocaine'
 gem 'paperclip'
 
