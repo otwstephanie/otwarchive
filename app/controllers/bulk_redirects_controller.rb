@@ -11,4 +11,13 @@ class BulkRedirectsController < ApplicationController
       render :new
     end
   end
+
+  def index
+    @works = Works.order(:title)
+    respond_to do |format|
+      format.html
+      format.csv { send_data @products.to_csv }
+      format.xls # { send_data @products.to_csv(col_sep: "\t") }
+    end
+  end
 end
