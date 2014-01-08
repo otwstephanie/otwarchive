@@ -9,3 +9,6 @@ Mime::Type.register 'application/x-mobipocket-ebook', :mobi
 
 # for epub files
 Mime::Type.register 'application/epub', :epub
+
+#for xls
+Mime::Type.register "application/xls", :xls
