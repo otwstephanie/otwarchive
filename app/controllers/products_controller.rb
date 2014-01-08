@@ -1,6 +1,6 @@
 class ProductsController < ApplicationController
   def index
-    @products = Product.order(:name)
+    @products = Product.order(:title)
     respond_to do |format|
       format.html
       format.csv { send_data @products.to_csv }
