@@ -1,5 +1,5 @@
 class Product < ActiveRecord::Base
-  attr_accessible :name, :price, :released_on
+  attr_accessible :title, :imported_from
   
   validates_presence_of :price
   
