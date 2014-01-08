@@ -11,6 +11,11 @@ Otwarchive::Application.routes.draw do
 
   match 'downloads/:download_prefix/:download_authors/:id/:download_title.:format' => 'downloads#show', :as => 'download'
 
+
+  resources :products
+  resources :product_imports
+
+
   #### STATIC CACHED COLLECTIONS ####
 
   namespace 'static' do
