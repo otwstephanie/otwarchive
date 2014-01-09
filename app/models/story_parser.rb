@@ -78,7 +78,13 @@ class StoryParser
       begin
         work = download_and_parse_story(url, options)
         if work && work.save
-          work.chapters.each {|chap| chap.save}
+
+          work.chapters.each { |chap|
+            if options[:data_provided] == 1
+              chap = assign_values_to_chapter(chap,options)
+            end
+            chap.save
+          }
           works << work
         else
           failed_urls << url
@@ -98,6 +104,14 @@ class StoryParser
     return [works, failed_urls, errors]
   end
 
+  #assign provided values to chapter
+  def assign_values_to_chapter(chapter,options)
+    chapter.title = options[:chapter_title]
+    chapter.summary = options[:chapter_summary]
+    chapter.notes = options[:chapter_notes]
+    chapter.endnotes = options[:chapter_notes]
+    return chapter
+  end
 
   ### DOWNLOAD-AND-PARSE WRAPPERS
 
@@ -148,6 +162,8 @@ class StoryParser
     check_for_previous_import(location)
     work = nil
     if  options[:data_provided] == 1
+      story = options[:first_chapter_body]
+      work = parse_story(story, location, options)
 
     else
       source = get_source_if_known(CHAPTERED_STORY_LOCATIONS, location)
@@ -160,7 +176,8 @@ class StoryParser
 
     end
     return work
-    end
+  end
+
 
 
   # download and add a new chapter to the end of a work

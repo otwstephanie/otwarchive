@@ -516,9 +516,11 @@ class WorksController < ApplicationController
 
     if @data_provided == 1
     provided_data = {
-        :first_chapter_title => params[:first_chapter_title],
-        :first_chapter_body => params[:first_chapter_body],
-        :summary => params[:summary],
+        :chapter_title => params[:chapter_title],
+        :chapter_body => params[:chapter_body],
+        :chapter_summary => params[:chapter_summary],
+        :chapter_notes => params[:chapter_notes],
+        :chapter_endnotes => params[:chapter_endnotes],
         :data_provided => 1
     }
 
