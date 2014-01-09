@@ -30,7 +30,7 @@ Otwarchive::Application.routes.draw do
         post :url_update
       end
     end
-    end
+
     resources :external_authors do
       member do
         post :forward
