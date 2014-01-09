@@ -30,6 +30,7 @@ Otwarchive::Application.routes.draw do
         post :url_update
       end
     end
+    end
     resources :external_authors do
       member do
         post :forward
@@ -287,10 +288,12 @@ Otwarchive::Application.routes.draw do
       collection do
         get :manage
         post :update_positions
+        post :import
       end
       member do
         get :preview
         post :post
+
       end
       resources :comments
     end
@@ -309,6 +312,7 @@ Otwarchive::Application.routes.draw do
     member do
       get :preview
       post :post
+      post :import
     end
     resources :comments
   end

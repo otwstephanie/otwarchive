@@ -1,0 +1,19 @@
+<!--Descriptive page name, messages and instructions--><!--/descriptions-->
+
+<% title = ts('New Chapter') %>
+<% content_for :title, title %>
+<h2 class="heading"><%= title %></h2>
+
+<%= error_messages_for :chapter %>
+<!--/descriptions-->
+
+<!--subnav-->
+<!--/subnav-->
+
+<!--main content-->
+<p class="required"><%=h t('.required', :default => '* Required field') %></p>
+<h3 class="heading"><%=h @work.title.html_safe %></h3>
+
+<%= render :partial => 'chapter_form', :locals => { :chapter => @chapter, :button_text => t('.forms.create', :default => "Create") } %>
+<!--/content-->
+
