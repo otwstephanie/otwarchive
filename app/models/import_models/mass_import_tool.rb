@@ -11,7 +11,7 @@ class MassImportTool
     #Import Class Version Number
     @version = 1
     @ih = ImportHelper.new
-
+    @post_url = "http://stephanies.archiveofourown.org/works/import"
     @use_new_mysql = 0
     #################################################
     #Database Settings
@@ -162,6 +162,28 @@ class MassImportTool
     @skip_rating_transform = false
   end
 
+
+
+  def post_story
+    HTTParty.post(@post_url,
+      :query => {
+          :email => "alan+thinkvitamin@carsonified.com",
+          :email => "alan+thinkvitamin@carsonified.com",
+          :email => "alan+thinkvitamin@carsonified.com",
+          :email => "alan+thinkvitamin@carsonified.com",
+          :email => "alan+thinkvitamin@carsonified.com",
+          :email => "alan+thinkvitamin@carsonified.com",
+          :email => "alan+thinkvitamin@carsonified.com",
+          :email => "alan+thinkvitamin@carsonified.com",
+          :email => "alan+thinkvitamin@carsonified.com",
+          :email => "alan+thinkvitamin@carsonified.com",
+
+      },
+
+      :headers => { "Authorization" => "THISISMYAPIKEYNOREALLY"
+      }
+    )
+  end
   ##################################################################################################
   # Main Worker Sub
   def import_data
