@@ -2,7 +2,7 @@
 # Mass Import Tool
 # Questions? Ask Stephanie =)
 class MassImportTool
-  include HTTParty
+  require 'httparty'
   include ActionView::Helpers::TextHelper
   include ActionView::Helpers::TagHelper #tag_options needed by auto_link
   require 'mysql2'
