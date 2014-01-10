@@ -17,5 +17,5 @@ class ImportChapter
   attr_accessor :body
   attr_accessor :position
   attr_accessor :date_posted
-
+  attr_accessor :endnotes
 end

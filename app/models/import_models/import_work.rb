@@ -31,5 +31,6 @@ class ImportWork
   attr_accessor :hits
   attr_accessor :rating
   attr_accessor :generes
+  attr_accessor :freeform
 
 end
