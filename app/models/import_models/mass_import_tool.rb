@@ -181,8 +181,7 @@ def assign_tag_strings(import_work)
   import_work.characters = character_string
   return import_work
 end
-  end
-end
+
 
   def post_story(story,import_user,first_chapter)
     s = story
