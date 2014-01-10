@@ -433,9 +433,11 @@ end
    ns = assign_row_import_work(ns, row)
 
    ## goto next if no chapters
+=begin
    num_source_chapters = 0
    num_source_chapters = get_single_value_target("Select chapid  from #{@source_chapters_table} where sid = #{ns.old_work_id} limit 1")
    next if num_source_chapters == 0
+=end
 
    ## get import user object from source database
    import_user = self.get_import_user_object_from_source(ns.old_user_id)
