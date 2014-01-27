@@ -38,7 +38,7 @@
 <fieldset>
   <legend><%= ts("Works URLs") %></legend>
   <dl>
-    <dt class="required"><%= label_tag "urls", ts("URLs*") %></dt>
+    <dt class="required"><%= label_tag "urls", ts("URLs") %></dt>
    <dd><%= text_area_tag "urls", @urls ? @urls.join("\n") : "", :rows => 20, :cols => 90 %>
 	<p class="footnote">URLs for existing work(s) or for the chapters of a single work; <strong>one URL per line</strong>.</p>
   </dd>
