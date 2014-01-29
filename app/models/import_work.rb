@@ -1,9 +1,9 @@
 class ImportWork
   include SAXMachine
-  elements :author, :as => :authors
-  elements :author, :as => :tags
-  element :title
-  element :summary
+  elements :AUTHOR, :as => :authors
+  elements :TAG, :as => :tags
+  element :TITLE
+  element :SUMMARY
 
 
 end
