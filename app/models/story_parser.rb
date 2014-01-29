@@ -7,6 +7,7 @@ class StoryParser
   require 'mechanize'
   require 'open-uri'
   require 'nori'
+  require 'sax-machine'
   include HtmlCleaner
 
   META_PATTERNS = {:title => 'Title',
