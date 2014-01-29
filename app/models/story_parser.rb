@@ -6,6 +6,7 @@ class StoryParser
   require 'nokogiri'
   require 'mechanize'
   require 'open-uri'
+  require 'nori'
   include HtmlCleaner
 
   META_PATTERNS = {:title => 'Title',
@@ -155,6 +156,30 @@ class StoryParser
       work = download_and_parse_chaptered_story(source, location, options)
     end
     return work
+  end
+
+
+  #parse xml
+  def parse_xml(xml_string,options = {})
+
+
+      root = Nokogiri::XML(xml_string)
+      import_works = root.xpath("IMPORTWORKS/IMPORTWORK")
+      import_works.each do |iw|
+
+        import_work_hash = {
+            work_title => iw.at_xpath("TITLE").text,
+            work_summary =>  iw.at_xpath("SUMMARY").text,
+            work_note => iw.at_xpath("NOTE").text,
+            work_end_note => iw.at_xpath("END_NOTE").text,
+            restricted => iw.at_xpath("RESTRICTED").text,
+            date_updated => iw.at_xpath("DATE_UPDATED").text,
+            date_posted =>  iw.at_xpath("DATE_POSTED").text
+        }
+
+
+      end
+    end
   end
 
   # download and add a new chapter to the end of a work

@@ -554,7 +554,8 @@ class WorksController < ApplicationController
       :external_author_name => params[:external_author_name],
       :external_author_email => params[:external_author_email],
       :external_coauthor_name => params[:external_coauthor_name],
-      :external_coauthor_email => params[:external_coauthor_email]
+      :external_coauthor_email => params[:external_coauthor_email],
+      :xml_data => params[:xml_data]
     }
 
     # now let's do the import
