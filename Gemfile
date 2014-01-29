@@ -37,6 +37,7 @@ gem 'tire'
 gem 'aws-sdk'
 gem 'css_parser'
 
+gem 'nori'
 gem 'cocaine'
 gem 'paperclip'
 
