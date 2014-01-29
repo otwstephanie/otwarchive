@@ -39,7 +39,7 @@ gem 'css_parser'
 gem 'nori'
 gem 'cocaine'
 gem 'paperclip'
-gem 'sax-machine'
+gem 'hashie'
 # for looking up image dimensions quickly
 gem 'fastimage'
 

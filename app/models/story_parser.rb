@@ -7,7 +7,7 @@ class StoryParser
   require 'mechanize'
   require 'open-uri'
   require 'nori'
-  require 'sax-machine'
+  require 'hashie'
   include HtmlCleaner
 
   META_PATTERNS = {:title => 'Title',
@@ -167,25 +167,55 @@ class StoryParser
 
   #parse xml
   def parse_xml(xml_string,options = {})
+=begin
+    import_hash = {:IMPORTWORK =>
+                       {:AUTHORS =>
+                            {:AUTHOR => {:EMAIL => "testauthor1@testing.com", :NAME => "testauthor1"}},
+                        :COLLECTIONS => {:COLLECTION => {:NAME => "Test Collection"}},
+                        :WORK =>
+                            {:SOURCE_URL => nil,
+                             :TITLE => "Test Title",
+                             :SUMMARY => "Test Summary",
+                             :NOTE => "Test Work Notes",
+                             :END_NOTE => "Test Work End Notes",
+                             :RESTRICTED => "False",
+                             :DATE_UPDATED => "\"01/01/2014\"",
+                             :DATE_POSTED => "\"07/20/1969\"",
+                             :POSTED => "True",
+                             :ADMIN_HIDDEN => "False",
+                             :TAGS =>
+                                 {:FANDOMS => {:FANDOM => ["Harry Potter", "World of Warcraft"]},
+                                  :CHARACTERS =>
+                                      {:CHARACTER =>
+                                           ["Hermione Granger", "Sylvanas Windrunner", "Illidan Stormrage"]},
+                                  :WARNINGS => {:WARNING => {:NAME => "\"Choose Not To Use Archive Warnings"}},
+                                  :RATING => "General Audiences",
+                                  :FREEFORMS => {:FREEFORM => ["Crossover", "Alternate Universe"]},
+                                  :RELATIONSHIPS => {:RELATIONSHIP => "\"Sylvanas / Hermione\""},
+                                  :CATEGORIES => {:CATEGORY => "\"Gen\""}},
+                             :CHAPTERS =>
+                                 {:CHAPTER =>
+                                      {:DATE_UPDATED => "\"01/01/2014\"",
+                                       :DATE_POSTED => "\"07/20/1969\"",
+                                       :POSITION => "1",
+                                       :NOTE => "Test Chapter 1 Note",
+                                       :TITLE => "Test Chapter 1 Title",
+                                       :SUMMARY => "Test Chapter 1 Summary",
+                                       :CONTENT => "Test Chapter 1 Body",
+                                       :END_NOTE => "Test Chapter 1 End Note",
+                                       :POSTED => "True",
+                                       :ADMIN_HIDDEN => "False",
+                                       :COMMENTS =>
+                                           {:COMMENT =>
+                                                [{:USER => "Guest@someplace.com",
+                                                  :CONTENT => "Test Chapter 1 Comment 1"},
+                                                 {:USER => "Guest@test.net",
+                                                  :CONTENT => "Test Chapter 1 Comment 2"}]}}}}}}
+=end
 
+    parser = Nori.new(:convert_tags_to => lambda { |tag| tag.upcase.to_sym })
+    import_hash = parser.parse(xml_string)
 
-      root = Nokogiri::XML(xml_string)
-      import_works = root.xpath("IMPORTWORKS/IMPORTWORK")
-      import_works.each do |iw|
-
-        import_work_hash = {
-            work_title => iw.at_xpath("TITLE").text,
-            work_summary =>  iw.at_xpath("SUMMARY").text,
-            work_note => iw.at_xpath("NOTE").text,
-            work_end_note => iw.at_xpath("END_NOTE").text,
-            restricted => iw.at_xpath("RESTRICTED").text,
-            date_updated => iw.at_xpath("DATE_UPDATED").text,
-            date_posted =>  iw.at_xpath("DATE_POSTED").text
-        }
-
-
-      end
-    end
   end
 
   # download and add a new chapter to the end of a work
@@ -285,6 +315,11 @@ class StoryParser
       chapter.posted = true # if options[:post_without_preview]
       return chapter
     end
+
+  def xml_hash_values_to_options(xml_hash,options)
+    options[:external_coauthor_name] = xml_hash
+
+  end
 
     def set_work_attributes(work, location="", options = {})
       raise Error, "Work could not be downloaded" if work.nil?
