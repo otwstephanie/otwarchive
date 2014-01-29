@@ -312,6 +312,7 @@ class StoryParser
     end
 
   def xml_hash_values_to_options(xml_hash,options)
+    my_mash = Mash.new(xml_hash)
     options[:external_coauthor_name] = xml_hash
 
   end
