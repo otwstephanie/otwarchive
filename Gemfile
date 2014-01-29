@@ -36,11 +36,10 @@ gem 'resque_mailer'
 gem 'tire'
 gem 'aws-sdk'
 gem 'css_parser'
-
 gem 'nori'
 gem 'cocaine'
 gem 'paperclip'
-
+gem 'sax-machine'
 # for looking up image dimensions quickly
 gem 'fastimage'
 
