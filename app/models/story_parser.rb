@@ -84,7 +84,7 @@ class StoryParser
   mashed_works.IMPORTWORK.each do |iw|
     begin
 
-      work = download_and_parse_story(url, options)
+      work = download_and_parse_story(iw, options)
       if work && work.save
         work.chapters.each { |chap| chap.save }
         works << work
@@ -184,7 +184,7 @@ class StoryParser
   # according to the rules for that site.
   def download_and_parse_story(location, options = {})
     if options[:xml_string]
-      location = mash.WORK.SOURCE_URL
+      location = iw.WORK.SOURCE_URL
       source = xml
     else
       source = get_source_if_known(CHAPTERED_STORY_LOCATIONS, location)
