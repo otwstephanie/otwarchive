@@ -180,11 +180,12 @@ class StoryParser
   # according to the rules for that site.
   def download_and_parse_story(location, options = {})
     m = nil
+
     if options[:xml_string]
                 m = Hashie::Mash.new(Hash[*location.flatten])
 
       location = m.IMPORTWORK.WORK.SOURCE_URL
-      source = xml
+      source = 'xml'
     else
       source = get_source_if_known(CHAPTERED_STORY_LOCATIONS, location)
     end
@@ -195,9 +196,9 @@ class StoryParser
       story = download_text(location)
       work = parse_story(story, location, options)
     else
-      if source = xml
+      if source == 'xml'
         binding.pry
-        work =parse_story(mash,location,options)
+        work =parse_story(m,location,options)
         binding.pry
       else
         work = download_and_parse_chaptered_story(source, location, options)
