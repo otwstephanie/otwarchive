@@ -559,10 +559,16 @@ class WorksController < ApplicationController
     }
 
     # now let's do the import
+
     if params[:import_multiple] == "works" && @urls.length > 1
       import_multiple(@urls, options)
-    else # a single work possibly with multiple chapters
-      import_single(@urls, options)
+    else
+      if params[:import_multiple] == "works" && options[:xml_string]
+        import_multiple(@urls, options)
+      else # a single work possibly with multiple chapters
+        import_single(@urls, options)
+      end
+
     end
 
   end
@@ -609,7 +615,12 @@ protected
   def import_multiple(urls, options)
     # try a multiple import
     storyparser = StoryParser.new
-    @works, failed_urls, errors = storyparser.import_from_urls(urls, options)
+    if options[:xml_string]
+      @works, failed_urls, errors = storyparser.import_many_xml(options)
+    else
+      @works, failed_urls, errors = storyparser.import_from_urls(urls, options)
+    end
+
 
     # collect the errors neatly, matching each error to the failed url
     unless failed_urls.empty?
