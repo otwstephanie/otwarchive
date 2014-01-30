@@ -7,7 +7,7 @@ class StoryParser
   require 'mechanize'
   require 'open-uri'
   require 'nori'
-  include Hashie::Extensions::Mash
+  include Hashie
   include HtmlCleaner
 
   META_PATTERNS = {:title => 'Title',
@@ -76,7 +76,7 @@ class StoryParser
 
  def import_many_xml(options={})
   hashed_works = parse_xml(options[:xml_string],options)
-  mashed_works = Mash.new(hashed_works)
+  mashed_works = Hashie::Mash.new(hashed_works)
   works = []
   failed_urls = []
   errors = []
