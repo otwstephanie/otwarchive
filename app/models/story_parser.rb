@@ -193,7 +193,9 @@ class StoryParser
       work = parse_story(story, location, options)
     else
       if source = xml
+        binding.pry
         work =parse_story(mash,location,options)
+        binding.pry
       else
         work = download_and_parse_chaptered_story(source, location, options)
       end
