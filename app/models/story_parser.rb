@@ -81,6 +81,7 @@ class StoryParser
   failed_urls = []
   errors = []
   url = "nothing"
+  binding.pry
   mashed_works.IMPORTWORK.each do |iw|
     begin
 
