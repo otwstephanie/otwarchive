@@ -17,6 +17,7 @@ gem 'mysql2'
 # We are currently running Redis 2.6.4 (12/6/2012)
 gem 'redis', ">=3.0"
 gem 'redis-namespace'
+gem 'pry-debugger'
 
 # Here are all our application-specific gems
 
