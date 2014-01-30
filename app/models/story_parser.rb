@@ -80,6 +80,7 @@ class StoryParser
   works = []
   failed_urls = []
   errors = []
+  url = "nothing"
   mashed_works.IMPORTWORK.each do |iw|
     begin
 
