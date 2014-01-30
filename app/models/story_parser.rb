@@ -70,7 +70,7 @@ class StoryParser
   MAX_CHAPTER_COUNT = 200
 
  def import_many_xml(options={})
-  hashed_works = parse_xml(options['xml_string'],options)
+  hashed_works = parse_xml(options[:xml_string],options)
   mashed_works = Mash.new(hashed_works)
   works = []
   failed_urls = []
