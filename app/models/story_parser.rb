@@ -186,7 +186,7 @@ class StoryParser
   def download_and_parse_story(location, options = {})
     m = nil
     if options[:xml_string]
-                m = location
+                m = Hashie::Mash.new(Hash[*location.flatten])
 
       location = m.IMPORTWORK.WORK.SOURCE_URL
       source = xml
