@@ -179,8 +179,11 @@ class StoryParser
   # to get a nice and consistent post format), it will pre-process the url
   # according to the rules for that site.
   def download_and_parse_story(location, options = {})
+    m = nil
     if options[:xml_string]
-      location = iw.WORK.SOURCE_URL
+                m = location
+
+      location = m.IMPORTWORK.WORK.SOURCE_URL
       source = xml
     else
       source = get_source_if_known(CHAPTERED_STORY_LOCATIONS, location)
