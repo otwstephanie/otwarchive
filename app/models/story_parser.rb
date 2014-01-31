@@ -197,7 +197,6 @@ class StoryParser
       work = parse_story(story, location, options)
     else
       if source == 'xml'
-        binding.pry
         work=parse_story(m,location,options)
       else
         work = download_and_parse_chaptered_story(source, location, options)
@@ -297,7 +296,7 @@ class StoryParser
 
   def parse_mash_chapters_into_story(location,mash,options = {})
   work = nil
-    mash.WORK.CHAPTERS.each do |c|
+    mash.work.chapter.each do |c|
       work_params = work_params_from_mash(mash,work_params)
       #work params set from mash
 
@@ -1037,7 +1036,7 @@ class StoryParser
     work_params[:title] = m.importwork.work.title
     work_params[:summary] = clean_storytext(m.importwork.work.summary)
     work_params = work_params_from_mash(m.importwork,work_params)
-
+             binding.pry
     return work_params
   end
 
