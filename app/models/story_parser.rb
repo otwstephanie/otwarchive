@@ -1056,6 +1056,7 @@ class StoryParser
     freeforms = nil
     warnings = nil
     relationships = nil
+    categories = nil
 
     #famdoms to comma string
     if mash.work.tags.fandom.class.to_s == "Array"
@@ -1090,6 +1091,13 @@ class StoryParser
       relationships = mash.work.tags.relationship.map(&:inspect).join(', ')
     else
       relationships = mash.work.tags.relationship
+    end
+
+    #relationships to comma string
+    if mash.work.tags.category.class.to_s == "Array"
+      categories = mash.work.tags.category.map(&:inspect).join(', ')
+    else
+      relationships = mash.work.tags.category
     end
 
     #ratings to string
