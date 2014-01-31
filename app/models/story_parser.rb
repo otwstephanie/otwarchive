@@ -1099,11 +1099,11 @@ class StoryParser
       relationships = mash.work.tags.relationship
     end
 
-    #relationships to comma string
+    #categories to comma string
     if mash.work.tags.category.class.to_s == "Array"
       categories = mash.work.tags.category.map(&:inspect).join(', ')
     else
-      relationships = mash.work.tags.category
+      categories = mash.work.tags.category
     end
 
     #ratings to string
