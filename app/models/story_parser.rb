@@ -256,7 +256,7 @@ class StoryParser
                                                   :CONTENT => "Test Chapter 1 Comment 2"}]}}}}}}
 =end
 
-    parser = Nori.new(:convert_tags_to => lambda { |tag| tag.upcase.to_sym })
+    parser = Nori.new(:convert_tags_to => lambda { |tag| tag.downcase.to_sym })
     import_hash = parser.parse(xml_string)
 
   end
@@ -388,10 +388,11 @@ class StoryParser
   def xml_hash_to_mash_assign_authors(xml_hash, options = {})
     m = Mash.new(xml_hash)
 
-      options[:author_name] = m.AUTHORS.AUTHOR.first.NAME
+    options[:author_name] = m.authors.author[0].name
+    options[:author_email] = m.authors.author[0].email
     if m.authors.length > 1
-      options[:external_coauthor_name] = m.AUTHORS.AUTHOR.last.NAME
-      options[:external_coauthor_email] = m.AUTHORS.AUTHOR.last.EMAIL
+      options[:external_coauthor_name] = m.authors.author[1].name
+      options[:external_coauthor_email] = m.authors.author[1].email
     end
 
   end
@@ -435,17 +436,17 @@ class StoryParser
 
   def set_work_attributes_from_mash(work,mash,options={})
     raise Error, "Work could not be... well something is broke!" if work.nil?
-    work.imported_from_url = mash.WORK.SOURCE_URL
-    work.expected_number_of_chapters = mash.WORK.CHAPTERS.length
+    work.imported_from_url = mash.work.source_url
+    work.expected_number_of_chapters = mash.work.chapter.length
     work = set_work_authors(work, options)
 
     # lock to registered users if specified or importing for others
-    work.restricted = options[:restricted] || options[:importing_for_others] || mash.WORK.RESTRICTED || false
+    work.restricted = options[:restricted] || options[:importing_for_others] || mash.work.restricted || false
 
     # set default value for title
     work.title = "Untitled Imported Work" if work.title.blank?
 
-    work.posted = true if options[:post_without_preview]  || mash.WORK.POSTED
+    work.posted = true if options[:post_without_preview]  || mash.work.posted
     work.chapters.each do |chapter|
       if chapter.content.length > ArchiveConfig.CONTENT_MAX
         # TODO: eventually: insert a new chapter
@@ -1033,15 +1034,23 @@ class StoryParser
     m = nil
     m = Hashie::Mash.new(Hash[*mash.flatten])
     work_params = {:chapter_attributes => {}}
-    work_params[:chapter_attributes][:content] = m.IMPORTWORK.WORK.CHAPTERS.first.CONTENT
-    work_params[:chapter_attributes][:title] = m.IMPORTWORK.WORK.CHAPTERS.first.TITLE
-    work_params[:title] = m.IMPORTWORK.WORK.TITLE
-    work_params[:summary] = clean_storytext(m.IMPORTWORK.WORK.SUMMARY)
-    work_params = work_params_from_mash(m.IMPORTWORK,work_params)
+    work_params[:chapter_attributes][:content] = m.importwork.work.chapters[0].content
+    work_params[:chapter_attributes][:title] = m.importwork.work.chapters[0].title
+    work_params[:title] = m.importwork.work.title
+    work_params[:summary] = clean_storytext(m.importwork.work.summary)
+    work_params = work_params_from_mash(m.importwork,work_params)
 
     return work_params
   end
 
+  def test
+    m = Hashie::Mash.new(hash)
+    part2(m)
+  end
+
+  def part2(m)
+
+  end
   def work_params_from_mash(mash,work_params)
     fandoms = nil
     characters = nil
