@@ -1037,11 +1037,10 @@ class StoryParser
   end
 
   def parse_story_from_mash(mash)
-    m = nil
-    m = Hashie::Mash.new(Hash[*mash.flatten])
+    m = mash
     work_params = {:chapter_attributes => {}}
-    work_params[:chapter_attributes][:content] = m.importwork.work.chapters[0].content
-    work_params[:chapter_attributes][:title] = m.importwork.work.chapters[0].title
+    work_params[:chapter_attributes][:content] = m.importwork.work.chapter[0].content
+    work_params[:chapter_attributes][:title] = m.importwork.work.chapter[0].title
     work_params[:title] = m.importwork.work.title
     work_params[:summary] = clean_storytext(m.importwork.work.summary)
     work_params = work_params_from_mash(m.importwork,work_params)
