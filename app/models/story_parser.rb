@@ -189,7 +189,7 @@ class StoryParser
     if options[:xml_string]
                 m = Hashie::Mash.new(Hash[*location.flatten])
 
-      location = m.IMPORTWORK.WORK.SOURCE_URL
+      location = m.importwork.work.source_url
       source = 'xml'
     else
       source = get_source_if_known(CHAPTERED_STORY_LOCATIONS, location)
@@ -203,7 +203,7 @@ class StoryParser
     else
       if source == 'xml'
         binding.pry
-        work =parse_story(m,location,options)
+        work=parse_story(m,location,options)
         binding.pry
       else
         work = download_and_parse_chaptered_story(source, location, options)
