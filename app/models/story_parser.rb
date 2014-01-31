@@ -76,7 +76,6 @@ class StoryParser
   failed_urls = []
   errors = []
   url = "nothing"
-  binding.pry
   mashed_works.importworks.each do |iw|
     begin
       work_mash = Hashie::Mash.new(Hash[*iw.flatten])
@@ -200,7 +199,6 @@ class StoryParser
       if source == 'xml'
         binding.pry
         work=parse_story(m,location,options)
-        binding.pry
       else
         work = download_and_parse_chaptered_story(source, location, options)
       end
