@@ -280,10 +280,16 @@ class StoryParser
 
   # Parses the text of a story, optionally from a given location.
   def parse_story(story, location, options = {})
+    m = location
     work_params = parse_common(story, location, options)
 
     # move any attributes from work to chapter if necessary
-    return set_work_attributes(Work.new(work_params), location, options)
+    if options[:xml_string]
+      return set_work_attributes_from_mash(Work.new(work_params),m,options)
+    else
+      return set_work_attributes(Work.new(work_params), location, options)
+    end
+
   end
 
   # parses and adds a new chapter to the end of the work
