@@ -1101,12 +1101,12 @@ class StoryParser
     #ratings to string
     rating = mash.work.tags.rating
 
-    work_params[:fandoms]  = clean_tags(fandoms.join(ArchiveConfig.DELIMITER_FOR_OUTPUT))
-    work_params[:category_string]  = clean_tags(categories.join(ArchiveConfig.DELIMITER_FOR_OUTPUT))
-    work_params[:warning_strings] = clean_tags(warnings.join(ArchiveConfig.DELIMITER_FOR_OUTPUT))
-    work_params[:character_string]  = clean_tags(characters.join(ArchiveConfig.DELIMITER_FOR_OUTPUT))
-    work_params[:relationship_string]  = clean_tags(relationships.join(ArchiveConfig.DELIMITER_FOR_OUTPUT))
-    work_params[:freeform_string] = clean_tags(freeforms.join(ArchiveConfig.DELIMITER_FOR_OUTPUT))
+    work_params[:fandoms]  = clean_tags(fandoms)
+    work_params[:category_string]  = clean_tags(categories)
+    work_params[:warning_strings] = clean_tags(warnings)
+    work_params[:character_string]  = clean_tags(characters)
+    work_params[:relationship_string]  = clean_tags(relationships)
+    work_params[:freeform_string] = clean_tags(freeforms)
     work_params[:notes] = clean_storytext(mash.work.note)
     work_params[:revised_at] = mash.work.date_updated
     work_params[:completed] = mash.work.completed
