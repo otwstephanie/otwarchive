@@ -1050,28 +1050,61 @@ class StoryParser
 
   end
   def work_params_from_mash(mash,work_params)
+    #stings to hold comma delimited values
     fandoms = nil
     characters = nil
     freeforms = nil
     warnings = nil
     relationships = nil
 
-    mash.WORK.TAGS.FANDOMS.each {|t| fandoms += t }
-    mash.WORK.TAGS.FREEFORMS.each { |t| freeforms += t }
-    mash.WORK.TAGS.RELATIONSHIPS.each { |t| relationships += t }
-    mash.WORK.TAGS.WARNINGS.each {|t| warnings += t }
-    mash.WORK.TAGS.CHARACTERS.each {|t| characters += t }
-    rating = mash.WORK.TAGS.RATING
+    #famdoms to comma string
+    if mash.work.tags.fandom.class.to_s == "Array"
+      fandoms = mash.work.tags.fandom.map(&:inspect).join(', ')
+    else
+      fandoms = mash.work.tags.fandom
+    end
+
+    #freeforms to comma string
+    if mash.work.tags.freeform.class.to_s == "Array"
+      freeforms = mash.work.tags.freeform.map(&:inspect).join(', ')
+    else
+      freeforms = mash.work.tags.freeform
+    end
+
+    #characters to comma string
+    if mash.work.tags.character.class.to_s == "Array"
+      characters = mash.work.tags.character.map(&:inspect).join(', ')
+    else
+      characters = mash.work.tags.character
+    end
+
+    #warnings to comma string
+    if mash.work.tags.warning.class.to_s == "Array"
+      warnings = mash.work.tags.warning.map(&:inspect).join(', ')
+    else
+      warnings = mash.work.tags.warning
+    end
+
+    #relationships to comma string
+    if mash.work.tags.relationship.class.to_s == "Array"
+      relationships = mash.work.tags.relationship.map(&:inspect).join(', ')
+    else
+      relationships = mash.work.tags.relationship
+    end
+
+    #ratings to string
+    rating = mash.work.tags.rating
+
     work_params[:fandoms]  = clean_tags(fandoms.join(ArchiveConfig.DELIMITER_FOR_OUTPUT))
     work_params[:category_string]  = clean_tags(categories.join(ArchiveConfig.DELIMITER_FOR_OUTPUT))
     work_params[:warning_strings] = clean_tags(warnings.join(ArchiveConfig.DELIMITER_FOR_OUTPUT))
     work_params[:character_string]  = clean_tags(characters.join(ArchiveConfig.DELIMITER_FOR_OUTPUT))
     work_params[:relationship_string]  = clean_tags(relationships.join(ArchiveConfig.DELIMITER_FOR_OUTPUT))
     work_params[:freeform_string] = clean_tags(freeforms.join(ArchiveConfig.DELIMITER_FOR_OUTPUT))
-    work_params[:notes] = clean_storytext(mash.WORK.NOTE)
-    work_params[:revised_at] = mash.WORK.DATE_UPDATED
-    work_params[:completed] = mash.WORK.COMPLETED
-    work_params[:rating_string] = convert_rating(mash.WORK.TAGS.RATING)
+    work_params[:notes] = clean_storytext(mash.work.note)
+    work_params[:revised_at] = mash.work.date_updated
+    work_params[:completed] = mash.work.completed
+    work_params[:rating_string] = convert_rating(mash.work.tags.rating)
 
 
   return work_params
