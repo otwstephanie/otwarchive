@@ -81,8 +81,7 @@ class StoryParser
   failed_urls = []
   errors = []
   url = "nothing"
-  binding.pry
-  mashed_works.importwork.each do |iw|
+  mashed_works.importworks.each do |iw|
     begin
       work_mash = Hashie::Mash.new(Hash[*iw.flatten])
       work = download_and_parse_story(work_mash, options)
