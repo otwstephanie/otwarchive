@@ -84,8 +84,8 @@ class StoryParser
   binding.pry
   mashed_works.importworks.each do |iw|
     begin
-
-      work = download_and_parse_story(iw, options)
+      work_mash = Hashie::Mash.new(Hash[*iw.flatten])
+      work = download_and_parse_story(work_mash, options)
       if work && work.save
         work.chapters.each { |chap| chap.save }
         works << work
@@ -186,8 +186,9 @@ class StoryParser
   def download_and_parse_story(location, options = {})
     m = nil
 
+
     if options[:xml_string]
-                m = Hashie::Mash.new(Hash[*location.flatten])
+      m = location
 
       location = m.importwork.work.source_url
       source = 'xml'
