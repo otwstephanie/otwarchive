@@ -77,7 +77,7 @@ class StoryParser
   errors = []
   url = "nothing"
   binding.pry
-  mashed_works.IMPORTWORKS.each do |iw|
+  mashed_works.importworks.each do |iw|
     begin
 
       work = download_and_parse_story(iw, options)
