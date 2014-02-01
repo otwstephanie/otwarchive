@@ -63,16 +63,11 @@ class StoryParser
   SOURCE_DEVIANTART = 'deviantart\.com'
   SOURCE_LOTRFANFICTION = 'lotrfanfiction\.com'
   SOURCE_TWILIGHTARCHIVES = 'twilightarchives\.com'
-  SOURCE_THEARCHIVE_NET = 'the\-archive\.net'
   SOURCE_EFICTION = 'viewstory\.php'
 
   # time out if we can't download fast enough
   STORY_DOWNLOAD_TIMEOUT = 60
   MAX_CHAPTER_COUNT = 200
-  
-  # To check for duplicate chapters, take a slice this long out of the story
-  # (in characters)
-  DUPLICATE_CHAPTER_LENGTH = 10000
 
  def import_many_xml(options={})
   hashed_works = parse_xml(options[:xml_string],options)
@@ -203,7 +198,6 @@ class StoryParser
     else
       if source == 'xml'
         work=parse_story(m,location,options)
-        binding.pry
       else
         work = download_and_parse_chaptered_story(source, location, options)
       end
