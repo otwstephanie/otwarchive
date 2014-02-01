@@ -181,6 +181,10 @@ class StoryParser
     work_params = parse_common(story, location, options[:encoding])
 
     # move any attributes from work to chapter if necessary
+    filename = 'testdata'
+    File.open(filename, File::WRONLY|File::CREAT|File::EXCL) do |file|
+      file.write pp work_params
+    end
     return set_work_attributes(Work.new(work_params), location, options)
   end
 
