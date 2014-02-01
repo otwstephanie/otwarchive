@@ -441,6 +441,7 @@ class StoryParser
 
   def set_work_attributes_from_mash(work,mash,options={})
     raise Error, "Work could not be... well something is broke!" if work.nil?
+    binding.pry
     work.imported_from_url = mash.work.source_url
     work.expected_number_of_chapters = mash.work.chapter.length
     work = set_work_authors(work, options)
