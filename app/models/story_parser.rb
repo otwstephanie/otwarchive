@@ -278,7 +278,7 @@ class StoryParser
 
   # Parses the text of a story, optionally from a given location.
   def parse_story(story, location, options = {})
-    m = location
+    m = story
     work_params = parse_common(story, location, options)
 
       binding.pry
