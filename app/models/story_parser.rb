@@ -716,7 +716,6 @@ class StoryParser
   #
   def parse_common(story, location = nil, options={})
     work_params = {:title => "UPLOADED WORK", :chapter_attributes => {:content => ""}}
-    encoding = options[:encoding]
 
     if options[:xml_string]
       params = parse_story_from_mash(story)
