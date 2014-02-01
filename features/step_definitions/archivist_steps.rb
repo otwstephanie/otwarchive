@@ -29,6 +29,7 @@ When /^I import the work "([^\"]*)"(?: by "([^\"]*)" with email "([^\"]*)")?$/ d
     step(%{I fill in "external_author_name" with "#{external_author_name}"})
     step(%{I fill in "external_author_email" with "#{external_author_email}"})
   end
+  binding.pry
   step(%{I check "Post without previewing"})
   step(%{I press "Import"})
 end
