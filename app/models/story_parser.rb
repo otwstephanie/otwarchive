@@ -283,6 +283,10 @@ class StoryParser
     m = location
     work_params = parse_common(story, location, options)
 
+    File.open('test.rb', 'w') do |f2|
+      # use "\n" for two lines of text
+      f2.pp work_params
+    end
     # move any attributes from work to chapter if necessary
     if options[:xml_string]
       return set_work_attributes_from_mash(Work.new(work_params),m,options)
