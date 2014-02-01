@@ -281,10 +281,7 @@ class StoryParser
     m = location
     work_params = parse_common(story, location, options)
 
-    File.open('test.rb', 'w') do |f2|
-      # use "\n" for two lines of text
-      f2.pp work_params
-    end
+
     # move any attributes from work to chapter if necessary
     if options[:xml_string]
       return set_work_attributes_from_mash(Work.new(work_params),m,options)
@@ -447,7 +444,15 @@ class StoryParser
     work = set_work_authors(work, options)
 
     # lock to registered users if specified or importing for others
+
     work.restricted = options[:restricted] || options[:importing_for_others] || mash.work.restricted || false
+    work.fandom_string = (options[:fandom].blank? ? ArchiveConfig.FANDOM_NO_TAG_NAME : options[:fandom]) if (options[:override_tags] || work.fandoms.empty?)
+    work.rating_string = (options[:rating].blank? ? ArchiveConfig.RATING_DEFAULT_TAG_NAME : options[:rating]) if (options[:override_tags] || work.ratings.empty?)
+    work.warning_strings = (options[:warning].blank? ? ArchiveConfig.WARNING_DEFAULT_TAG_NAME : options[:warning]) if (options[:override_tags] || work.warnings.empty?)
+    work.category_string = options[:category] if !options[:category].blank? && (options[:override_tags] || work.categories.empty?)
+    work.character_string = options[:character] if !options[:character].blank? && (options[:override_tags] || work.characters.empty?)
+    work.relationship_string = options[:relationship] if !options[:relationship].blank? && (options[:override_tags] || work.relationships.empty?)
+    work.freeform_string = options[:freeform] if !options[:freeform].blank? && (options[:override_tags] || work.freeforms.empty?)
 
     # set default value for title
     work.title = "Untitled Imported Work" if work.title.blank?
@@ -1043,8 +1048,7 @@ class StoryParser
     work_params[:chapter_attributes][:title] = m.importwork.work.chapter[0].title
     work_params[:title] = m.importwork.work.title
     work_params[:summary] = clean_storytext(m.importwork.work.summary)
-    work_params = work_params_from_mash(m.importwork,work_params)
-             binding.pry
+
     return work_params
   end
 
@@ -1056,7 +1060,7 @@ class StoryParser
   def part2(m)
 
   end
-  def work_params_from_mash(mash,work_params)
+  def options_from_mash(mash,options={})
     #stings to hold comma delimited values
     fandoms = nil
     characters = nil
@@ -1110,19 +1114,19 @@ class StoryParser
     #ratings to string
     rating = mash.work.tags.rating
 
-    work_params[:fandoms]  = clean_tags(fandoms)
-    work_params[:category_string]  = clean_tags(categories)
-    work_params[:warning_strings] = clean_tags(warnings)
-    work_params[:character_string]  = clean_tags(characters)
-    work_params[:relationship_string]  = clean_tags(relationships)
-    work_params[:freeform_string] = clean_tags(freeforms)
-    work_params[:notes] = clean_storytext(mash.work.note)
-    work_params[:revised_at] = mash.work.date_updated
-    work_params[:completed] = mash.work.completed
-    work_params[:rating_string] = convert_rating(mash.work.tags.rating)
+    options[:fandom]  = clean_tags(fandoms)
+    options[:category]  = clean_tags(categories)
+    options[:warning] = clean_tags(warnings)
+    options[:character]  = clean_tags(characters)
+    options[:relationship]  = clean_tags(relationships)
+    options[:freeform] = clean_tags(freeforms)
+    #work_params[:notes] = clean_storytext(mash.work.note)
+    #work_params[:revised_at] = mash.work.date_updated
+   # work_params[:completed] = mash.work.completed
+    options[:rating] = convert_rating(mash.work.tags.rating)
 
 
-  return work_params
+  return options
   end
 
   def parse_story_from_modified_efiction(story, site = "")
