@@ -443,30 +443,20 @@ class StoryParser
   def set_work_attributes(work,location="",options={})
     raise Error, "Work could not be... well something is broke!" if work.nil?
     binding.pry
-    m = nil
 
     if options[:xml_string]
-      m = location
       url =  String.try_convert(m.importwork.work.source_url)
-      work.imported_from_url =  url
-      if m.importwork.chapter.class.to_s == "Array"
-        work.expected_number_of_chapters = m.importwork.work.chapter.length
+      work.imported_from_url = url
+      if location.importwork.chapter.class.to_s == "Array"
+        work.expected_number_of_chapters = location.importwork.work.chapter.length
       else
         work.expected_number_of_chapters = 1
       end
-
+      work.restricted = options[:restricted] || options[:importing_for_others] || location.importwork.work.restricted || false
+      work.posted = true if options[:post_without_preview] || location.importwork.work.posted || options[:importing_for_others]
     else
       work.imported_from_url = location
       work.expected_number_of_chapters = work.chapters.length
-    end
-
-    work = set_work_authors(work, options)
-
-    # lock to registered users if specified or importing for others   / set posted t/f checking if importing from mash obj
-    if m?
-      work.restricted = options[:restricted] || options[:importing_for_others] || m.importwork.work.restricted || false
-      work.posted = true if options[:post_without_preview]  || m? || m.importwork.work.posted
-    else
       work.restricted = options[:restricted] || options[:importing_for_others] || false
       work.posted = true if options[:post_without_preview]
     end
@@ -482,7 +472,9 @@ class StoryParser
     # set default value for title
     work.title = "Untitled Imported Work" if work.title.blank?
 
-    work.chapters.each do |chapter|
+  work = set_work_authors(work, options)
+
+  work.chapters.each do |chapter|
       if chapter.content.length > ArchiveConfig.CONTENT_MAX
         # TODO: eventually: insert a new chapter
         chapter.content.truncate(ArchiveConfig.CONTENT_MAX, :omission => "<strong>WARNING: import truncated automatically because chapter was too long! Please add a new chapter for remaining content.</strong>", :separator => "</p>")
