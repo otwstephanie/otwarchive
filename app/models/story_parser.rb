@@ -315,7 +315,7 @@ class StoryParser
         work.chapters << set_chapter_attributes(work, new_chapter, location, options)
       end
     end
-    return set_work_attributes_from_mash(work, mash, options)
+    return set_work_attributes(work, mash, options)
 
   end
 
@@ -440,58 +440,37 @@ class StoryParser
 
   end
 
-  def set_work_attributes_from_mash(work,mash,options={})
+  def set_work_attributes(work,location="",options={})
     raise Error, "Work could not be... well something is broke!" if work.nil?
     binding.pry
-    url =  String.try_convert(mash.importwork.work.source_url)
-    work.imported_from_url =  url
-    if mash.importwork.chapter.class.to_s == "Array"
-      work.expected_number_of_chapters = mash.importwork.work.chapter.length
-    else
-      work.expected_number_of_chapters=1
-    end
-    work = set_work_authors(work, options)
+    m = nil
 
-    # lock to registered users if specified or importing for others
-
-    work.restricted = options[:restricted] || options[:importing_for_others] || mash.work.restricted || false
-    work.fandom_string = (options[:fandom].blank? ? ArchiveConfig.FANDOM_NO_TAG_NAME : options[:fandom]) if (options[:override_tags] || work.fandoms.empty?)
-    work.rating_string = (options[:rating].blank? ? ArchiveConfig.RATING_DEFAULT_TAG_NAME : options[:rating]) if (options[:override_tags] || work.ratings.empty?)
-    work.warning_strings = (options[:warning].blank? ? ArchiveConfig.WARNING_DEFAULT_TAG_NAME : options[:warning]) if (options[:override_tags] || work.warnings.empty?)
-    work.category_string = options[:category] if !options[:category].blank? && (options[:override_tags] || work.categories.empty?)
-    work.character_string = options[:character] if !options[:character].blank? && (options[:override_tags] || work.characters.empty?)
-    work.relationship_string = options[:relationship] if !options[:relationship].blank? && (options[:override_tags] || work.relationships.empty?)
-    work.freeform_string = options[:freeform] if !options[:freeform].blank? && (options[:override_tags] || work.freeforms.empty?)
-
-    # set default value for title
-    work.title = "Untitled Imported Work" if work.title.blank?
-
-    work.posted = true if options[:post_without_preview]  || mash.work.posted
-    work.chapters.each do |chapter|
-      if chapter.content.length > ArchiveConfig.CONTENT_MAX
-        # TODO: eventually: insert a new chapter
-        chapter.content.truncate(ArchiveConfig.CONTENT_MAX, :omission => "<strong>WARNING: import truncated automatically because chapter was too long! Please add a new chapter for remaining content.</strong>", :separator => "</p>")
+    if options[:xml_string]
+      m = location
+      url =  String.try_convert(m.importwork.work.source_url)
+      work.imported_from_url =  url
+      if mash.importwork.chapter.class.to_s == "Array"
+        work.expected_number_of_chapters = m.importwork.work.chapter.length
+      else
+        work.expected_number_of_chapters = 1
       end
 
-      chapter.posted = true
-      # ack! causing the chapters to exist even if work doesn't get created!
-      # chapter.save
+    else
+      work.imported_from_url = location
+      work.expected_number_of_chapters = work.chapters.length
     end
-    return work
-  end
 
-  def set_work_attributes(work, location="", options = {})
-    raise Error, "Work could not be downloaded" if work.nil?
-    work.imported_from_url = location
-    work.expected_number_of_chapters = work.chapters.length
-
-    #set authors
     work = set_work_authors(work, options)
 
-    # lock to registered users if specified or importing for others
-    work.restricted = options[:restricted] || options[:importing_for_others] || false
+    # lock to registered users if specified or importing for others   / set posted t/f checking if importing from mash obj
+    if m?
+      work.restricted = options[:restricted] || options[:importing_for_others] || mash.importwork.work.restricted || false
+      work.posted = true if options[:post_without_preview]  || m? || m.importwork.work.posted
+    else
+      work.restricted = options[:restricted] || options[:importing_for_others] || false
+      work.posted = true if options[:post_without_preview]
+    end
 
-    # set default values for required tags for any works that don't have them
     work.fandom_string = (options[:fandom].blank? ? ArchiveConfig.FANDOM_NO_TAG_NAME : options[:fandom]) if (options[:override_tags] || work.fandoms.empty?)
     work.rating_string = (options[:rating].blank? ? ArchiveConfig.RATING_DEFAULT_TAG_NAME : options[:rating]) if (options[:override_tags] || work.ratings.empty?)
     work.warning_strings = (options[:warning].blank? ? ArchiveConfig.WARNING_DEFAULT_TAG_NAME : options[:warning]) if (options[:override_tags] || work.warnings.empty?)
@@ -503,7 +482,6 @@ class StoryParser
     # set default value for title
     work.title = "Untitled Imported Work" if work.title.blank?
 
-    work.posted = true if options[:post_without_preview]
     work.chapters.each do |chapter|
       if chapter.content.length > ArchiveConfig.CONTENT_MAX
         # TODO: eventually: insert a new chapter
