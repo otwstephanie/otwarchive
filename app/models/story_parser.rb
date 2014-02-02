@@ -445,7 +445,7 @@ class StoryParser
     binding.pry
     url =  String.try_convert(mash.importwork.work.source_url)
     work.imported_from_url =  url
-    if mash.importwork.chapter.class.to_s ="Array"
+    if mash.importwork.chapter.class.to_s == "Array"
       work.expected_number_of_chapters = mash.importwork.work.chapter.length
     else
       work.expected_number_of_chapters=1
