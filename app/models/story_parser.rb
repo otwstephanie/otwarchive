@@ -287,7 +287,7 @@ class StoryParser
     # move any attributes from work to chapter if necessary
     if options[:xml_string]
 
-      return set_work_attributes_from_mash(Work.new(work_params),m,options)
+      return set_work_attributes(Work.new(work_params),m,options)
     else
       return set_work_attributes(Work.new(work_params), location, options)
     end
