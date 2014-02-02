@@ -445,7 +445,7 @@ class StoryParser
     binding.pry
 
     if options[:xml_string]
-      url =  String.try_convert(m.importwork.work.source_url)
+      url =  String.try_convert(location.importwork.work.source_url)
       work.imported_from_url = url
       if location.importwork.chapter.class.to_s == "Array"
         work.expected_number_of_chapters = location.importwork.work.chapter.length
