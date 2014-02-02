@@ -452,6 +452,9 @@ class StoryParser
       end
       work.restricted = options[:restricted] || options[:importing_for_others] || location.importwork.work.restricted || false
       work.posted = true if options[:post_without_preview] || location.importwork.work.posted || options[:importing_for_others]
+
+      #set options from mash
+      options = options_from_mash(location)
     else
       work.imported_from_url = location
       work.expected_number_of_chapters = work.chapters.length
