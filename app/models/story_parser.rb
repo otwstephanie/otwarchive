@@ -449,7 +449,7 @@ class StoryParser
       m = location
       url =  String.try_convert(m.importwork.work.source_url)
       work.imported_from_url =  url
-      if mash.importwork.chapter.class.to_s == "Array"
+      if m.importwork.chapter.class.to_s == "Array"
         work.expected_number_of_chapters = m.importwork.work.chapter.length
       else
         work.expected_number_of_chapters = 1
@@ -464,7 +464,7 @@ class StoryParser
 
     # lock to registered users if specified or importing for others   / set posted t/f checking if importing from mash obj
     if m?
-      work.restricted = options[:restricted] || options[:importing_for_others] || mash.importwork.work.restricted || false
+      work.restricted = options[:restricted] || options[:importing_for_others] || m.importwork.work.restricted || false
       work.posted = true if options[:post_without_preview]  || m? || m.importwork.work.posted
     else
       work.restricted = options[:restricted] || options[:importing_for_others] || false
