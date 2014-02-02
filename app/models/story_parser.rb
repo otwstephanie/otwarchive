@@ -1042,6 +1042,11 @@ class StoryParser
   def part2(m)
 
   end
+
+  def fix_tag_string(s)
+    s.gsub /"/, ''
+  end
+
   def options_from_mash(mash,options={})
     #stings to hold comma delimited values
     fandoms = nil
@@ -1096,12 +1101,12 @@ class StoryParser
     #ratings to string
     rating = mash.importwork.work.tags.rating
 
-    options[:fandom]  = clean_tags(fandoms)
-    options[:category]  = clean_tags(categories)
-    options[:warning] = clean_tags(warnings)
-    options[:character]  = clean_tags(characters)
-    options[:relationship]  = clean_tags(relationships)
-    options[:freeform] = clean_tags(freeforms)
+    options[:fandom]  = fix_tag_string(clean_tags(fandoms))
+    options[:category]  = fix_tag_string(clean_tags(categories))
+    options[:warning] = fix_tag_string(clean_tags(warnings))
+    options[:character]  = fix_tag_string(clean_tags(characters))
+    options[:relationship]  = fix_tag_string(clean_tags(relationships))
+    options[:freeform] = fix_tag_string(clean_tags(freeforms))
     #work_params[:notes] = clean_storytext(mash.work.note)
     #work_params[:revised_at] = mash.work.date_updated
    # work_params[:completed] = mash.work.completed
