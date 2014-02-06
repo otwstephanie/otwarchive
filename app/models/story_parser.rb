@@ -369,6 +369,7 @@ class StoryParser
     return parse_chapters_into_story(location, chapter_contents, options)
   end
 
+  #check for previous import given location
   def check_for_previous_import(location)
     work = Work.find_by_imported_from_url(location)
     if work
@@ -376,13 +377,6 @@ class StoryParser
     end
   end
 
-  #add rest of chapter attributes if specified in chapter, not sure if there is any relation
-  # # to actual object yet! - steph 1/30/14
-  def set_mash_chapter_attributes(work, chapter, mash, options = {})
-    chapter.position = mash.WORK.CHAPTERS.length + 1
-    chapter.posted = true # if options[:post_without_preview]
-    return chapter
-  end
 
   def set_chapter_attributes(work, chapter, location, options = {})
     chapter.position = work.chapters.length + 1
@@ -390,16 +384,19 @@ class StoryParser
     return chapter
   end
 
-  def xml_hash_to_mash_assign_authors(xml_hash, options = {})
-    m = Mash.new(xml_hash)
 
-    options[:author_name] = m.authors.author[0].name
-    options[:author_email] = m.authors.author[0].email
-    if m.authors.length > 1
-      options[:external_coauthor_name] = m.authors.author[1].name
-      options[:external_coauthor_email] = m.authors.author[1].email
-    end
-
+  #return options hash with authors added from xml
+  def xml_hash_to_mash_assign_authors(mash, options = {})
+    if m.author.class.to_s == "Array"
+    options[:author_name] = m.author[0].name
+    options[:author_email] = m.author[0].email
+    options[:external_coauthor_name] = m.authors.author[1].name
+    options[:external_coauthor_email] = m.authors.author[1].email
+   else
+    options[:author_name] = m.author.name
+     options[:author_email] = m.author.email
+   end
+    return options
   end
 
   #set work authors
@@ -456,6 +453,9 @@ class StoryParser
 
       #set options from mash
       options = options_from_mash(location)
+      if options[:importing_for_others]
+        options = xml_hash_to_mash_assign_authors(options)
+      end
     else
       work.imported_from_url = location
       work.expected_number_of_chapters = work.chapters.length
