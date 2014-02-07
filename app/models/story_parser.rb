@@ -1030,8 +1030,14 @@ class StoryParser
   def parse_story_from_mash(mash)
     m = mash
     work_params = {:chapter_attributes => {}}
-    work_params[:chapter_attributes][:content] = m.work.chapter[0].content
-    work_params[:chapter_attributes][:title] = m.work.chapter[0].title
+    if m.work.chapter.class.name = "Array"
+      work_params[:chapter_attributes][:content] = m.work.chapter[0].content
+      work_params[:chapter_attributes][:title] = m.work.chapter[0].title
+    else
+      work_params[:chapter_attributes][:content] = m.work.chapter.content
+      work_params[:chapter_attributes][:title] = m.work.chapter.title
+    end
+
     work_params[:title] = m.work.title
     work_params[:summary] = clean_storytext(m.work.summary)
 
