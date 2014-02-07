@@ -185,7 +185,7 @@ class StoryParser
     if options[:xml_string]
       m = location
 
-      location = m.importwork.work.source_url
+      location = m.work.source_url
       source = 'xml'
     else
       source = get_source_if_known(CHAPTERED_STORY_LOCATIONS, location)
@@ -443,15 +443,15 @@ class StoryParser
     binding.pry
 
     if options[:xml_string]
-      url =  String.try_convert(location.importwork.work.source_url)
+      url =  String.try_convert(location.work.source_url)
       work.imported_from_url = url
-      if location.importwork.chapter.class.to_s == "Array"
-        work.expected_number_of_chapters = location.importwork.work.chapter.length
+      if location.chapter.class.to_s == "Array"
+        work.expected_number_of_chapters = location.work.chapter.length
       else
         work.expected_number_of_chapters = 1
       end
-      work.restricted = options[:restricted] || options[:importing_for_others] || location.importwork.work.restricted || false
-      work.posted = true if options[:post_without_preview] || location.importwork.work.posted || options[:importing_for_others]
+      work.restricted = options[:restricted] || options[:importing_for_others] || location.work.restricted || false
+      work.posted = true if options[:post_without_preview] || location.work.posted || options[:importing_for_others]
 
       #set options from mash
       options = options_from_mash(location)
@@ -1027,10 +1027,10 @@ class StoryParser
   def parse_story_from_mash(mash)
     m = mash
     work_params = {:chapter_attributes => {}}
-    work_params[:chapter_attributes][:content] = m.importwork.work.chapter[0].content
-    work_params[:chapter_attributes][:title] = m.importwork.work.chapter[0].title
-    work_params[:title] = m.importwork.work.title
-    work_params[:summary] = clean_storytext(m.importwork.work.summary)
+    work_params[:chapter_attributes][:content] = m.work.chapter[0].content
+    work_params[:chapter_attributes][:title] = m.work.chapter[0].title
+    work_params[:title] = m.work.title
+    work_params[:summary] = clean_storytext(m.work.summary)
 
     return work_params
   end
@@ -1058,49 +1058,49 @@ class StoryParser
     categories = nil
 
     #famdoms to comma string
-    if mash.importwork.work.tags.fandom.class.to_s == "Array"
-      fandoms = mash.importwork.work.tags.fandom.map(&:inspect).join(', ')
+    if mash.work.tags.fandom.class.to_s == "Array"
+      fandoms = mash.work.tags.fandom.map(&:inspect).join(', ')
     else
-      fandoms = mash.importwork.work.tags.fandom
+      fandoms = mash.work.tags.fandom
     end
 
     #freeforms to comma string
-    if mash.importwork.work.tags.freeform.class.to_s == "Array"
-      freeforms = mash.importwork.work.tags.freeform.map(&:inspect).join(', ')
+    if mash.work.tags.freeform.class.to_s == "Array"
+      freeforms = mash.work.tags.freeform.map(&:inspect).join(', ')
     else
-      freeforms = mash.importwork.work.tags.freeform
+      freeforms = mash.work.tags.freeform
     end
 
     #characters to comma string
-    if mash.importwork.work.tags.character.class.to_s == "Array"
-      characters = mash.importwork.work.tags.character.map(&:inspect).join(', ')
+    if mash.work.tags.character.class.to_s == "Array"
+      characters = mash.work.tags.character.map(&:inspect).join(', ')
     else
-      characters = mash.importwork.work.tags.character
+      characters = mash.work.tags.character
     end
 
     #warnings to comma string
-    if mash.importwork.work.tags.warning.class.to_s == "Array"
-      warnings = mash.importwork.work.tags.warning.map(&:inspect).join(', ')
+    if mash.work.tags.warning.class.to_s == "Array"
+      warnings = mash.work.tags.warning.map(&:inspect).join(', ')
     else
-      warnings = mash.importwork.work.tags.warning
+      warnings = mash.work.tags.warning
     end
 
     #relationships to comma string
-    if mash.importwork.work.tags.relationship.class.to_s == "Array"
-      relationships = mash.importwork.work.tags.relationship.map(&:inspect).join(', ')
+    if mash.work.tags.relationship.class.to_s == "Array"
+      relationships = mash.work.tags.relationship.map(&:inspect).join(', ')
     else
-      relationships = mash.importwork.work.tags.relationship
+      relationships = mash.work.tags.relationship
     end
 
     #categories to comma string
-    if mash.importwork.work.tags.category.class.to_s == "Array"
-      categories = mash.importwork.work.tags.category.map(&:inspect).join(', ')
+    if mash.work.tags.category.class.to_s == "Array"
+      categories = mash.work.tags.category.map(&:inspect).join(', ')
     else
-      categories = mash.importwork.work.tags.category
+      categories = mash.work.tags.category
     end
 
     #ratings to string
-    rating = mash.importwork.work.tags.rating
+    rating = mash.work.tags.rating
 
     options[:fandom]  = fix_tag_string(clean_tags(fandoms))
     options[:category]  = fix_tag_string(clean_tags(categories))
@@ -1111,7 +1111,7 @@ class StoryParser
     #work_params[:notes] = clean_storytext(mash.work.note)
     #work_params[:revised_at] = mash.work.date_updated
    # work_params[:completed] = mash.work.completed
-    options[:rating] = convert_rating(mash.importwork.work.tags.rating)
+    options[:rating] = convert_rating(mash.work.tags.rating)
 
 
   return options
