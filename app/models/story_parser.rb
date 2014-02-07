@@ -1029,7 +1029,7 @@ class StoryParser
     m = mash
     binding.pry
     work_params = {:chapter_attributes => {}}
-    if m.work.chapter.class.to_s = "Array"
+    if m.work.chapter.class.to_s == "Array"
       work_params[:chapter_attributes][:content] = m.work.chapter[0].content
       work_params[:chapter_attributes][:title] = m.work.chapter[0].title
     else
