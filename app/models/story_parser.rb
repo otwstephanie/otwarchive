@@ -75,10 +75,10 @@ class StoryParser
   errors = []
   url = "nothing"
   binding.pry
-  mashed_works.importworks.each do |iw|
+  mashed_works.importworks.importwork.each do |iw|
     begin
-      iw.importwork.each do |iw2|
-        work_mash = Hashie::Mash.new(Hash[*iw2.flatten])
+
+        work_mash = Hashie::Mash.new(Hash[*iw.flatten])
         work = download_and_parse_story(work_mash, options)
         if work && work.save
           work.chapters.each { |chap| chap.save }
@@ -88,7 +88,6 @@ class StoryParser
           errors << work.errors.values.join(", ")
           work.delete if work
         end
-      end
 
     rescue Timeout::Error
       failed_urls << url
