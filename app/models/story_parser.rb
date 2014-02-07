@@ -77,16 +77,19 @@ class StoryParser
   binding.pry
   mashed_works.importworks.each do |iw|
     begin
-      work_mash = Hashie::Mash.new(Hash[*iw.flatten])
-      work = download_and_parse_story(work_mash, options)
-      if work && work.save
-        work.chapters.each { |chap| chap.save }
-        works << work
-      else
-        failed_urls << url
-        errors << work.errors.values.join(", ")
-        work.delete if work
+      iw.importwork.each do |iw2|
+        work_mash = Hashie::Mash.new(Hash[*iw2.flatten])
+        work = download_and_parse_story(work_mash, options)
+        if work && work.save
+          work.chapters.each { |chap| chap.save }
+          works << work
+        else
+          failed_urls << url
+          errors << work.errors.values.join(", ")
+          work.delete if work
+        end
       end
+
     rescue Timeout::Error
       failed_urls << url
       errors << "Import has timed out. This may be due to connectivity problems with the source site. Please try again in a few minutes, or check Known Issues to see if there are import problems with this site."
