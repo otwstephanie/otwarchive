@@ -81,6 +81,7 @@ class StoryParser
     begin
 
         work_mash = Hashie::Mash.new(Hash[*iw.flatten])
+        binding.pry
         work = download_and_parse_story(work_mash, options)
         if work && work.save
           work.chapters.each { |chap| chap.save }
