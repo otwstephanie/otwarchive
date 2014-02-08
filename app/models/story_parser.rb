@@ -389,15 +389,17 @@ class StoryParser
 
 
   #return options hash with authors added from xml
-  def xml_hash_to_mash_assign_authors(mash, options = {})
-    if m.author.class.to_s == "Array"
+  def xml_hash_to_mash_assign_authors(mash)
+    options = {}
+
+    if mash.author.class.to_s == "Array"
     options[:author_name] = m.author[0].name
     options[:author_email] = m.author[0].email
     options[:external_coauthor_name] = m.authors.author[1].name
     options[:external_coauthor_email] = m.authors.author[1].email
    else
-    options[:author_name] = m.author.name
-     options[:author_email] = m.author.email
+    options[:author_name] = mash.author.name
+     options[:author_email] = mash.author.email
    end
     return options
   end
@@ -455,9 +457,11 @@ class StoryParser
       work.posted = true if options[:post_without_preview] || location.work.posted || options[:importing_for_others]
 
       #set options from mash
-      options = options_from_mash(location)
+      options_a = options_from_mash(location)
+      options.merge(options_a)
+
       if options[:importing_for_others]
-        options = xml_hash_to_mash_assign_authors(options)
+        options_b == xml_hash_to_mash_assign_authors(location)
       end
     else
       work.imported_from_url = location
@@ -476,6 +480,8 @@ class StoryParser
 
     # set default value for title
     work.title = "Untitled Imported Work" if work.title.blank?
+
+    #set default language to english
 
   work = set_work_authors(work, options)
 
