@@ -1110,27 +1110,27 @@ class StoryParser
     #ratings to string
     rating = mash.work.tags.rating
 
-    if fandoms.length < 1
+    unless fandoms
       fandoms = "None"
     end
 
-    if categories.length < 1
+    unless categories
       categories = "Gen"
     end
 
-    if warnings.length < 1
-      warnings = "None"
+    unless warnings
+       warnings = "None"
     end
 
-    if characters.length < 1
+    unless characters
       characters = "None"
     end
 
-    if relationships.length < 1
+  unless relationships
       relationships = "None"
     end
 
-    if freeforms.length < 1
+    unless freeforms
       freeforms = "None"
     end
     options[:fandom]  = fix_tag_string(clean_tags(fandoms))
