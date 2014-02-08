@@ -79,7 +79,6 @@ class StoryParser
     begin
 
         work_mash = Hashie::Mash.new(Hash[*iw.flatten])
-        binding.pry
         work = download_and_parse_story(work_mash, options)
         if work && work.save
           work.chapters.each { |chap| chap.save }
@@ -285,7 +284,6 @@ class StoryParser
     m = story
     work_params = parse_common(story, location, options)
 
-      binding.pry
     # move any attributes from work to chapter if necessary
     if options[:xml_string]
 
@@ -1034,7 +1032,6 @@ class StoryParser
 
   def parse_story_from_mash(mash)
     m = mash
-    binding.pry
     work_params = {:chapter_attributes => {}}
     if m.work.chapter.class.to_s == "Array"
       work_params[:chapter_attributes][:content] = m.work.chapter[0].content
