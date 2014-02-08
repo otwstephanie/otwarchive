@@ -456,13 +456,10 @@ class StoryParser
       work.posted = true if options[:post_without_preview] || location.work.posted || options[:importing_for_others]
 
       #set options from mash
-      options_a = options_from_mash(location)
-      options.merge(options_a)
+      options = options.merge(options_from_mash(location))
 
       if options[:importing_for_others]
-
-        options_b = xml_hash_to_mash_assign_authors(location)
-        options.merge(options_b)
+        options = options.merge(xml_hash_to_mash_assign_authors(location))
       end
     else
       work.imported_from_url = location
