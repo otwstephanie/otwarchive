@@ -391,13 +391,13 @@ class StoryParser
     options = {}
 
     if mash.author.class.to_s == "Array"
-    options[:author_name] = m.author[0].name
-    options[:author_email] = m.author[0].email
+    options[:external_author_name] = m.author[0].name
+    options[:external_author_email] = m.author[0].email
     options[:external_coauthor_name] = m.authors.author[1].name
     options[:external_coauthor_email] = m.authors.author[1].email
    else
-    options[:author_name] = mash.author.name
-     options[:author_email] = mash.author.email
+    options[:external_author_name] = mash.author.name
+     options[:external_author_email] = mash.author.email
    end
     return options
   end
@@ -419,7 +419,14 @@ class StoryParser
     # handle importing works for others
     # build an external creatorship for each author
     if options[:importing_for_others]
-      external_author_names = options[:external_author_names] || parse_author(location, options[:external_author_name], options[:external_author_email])
+      external_author_names = nil
+      if options[:external_author_names]
+      external_author_names = option[:external_author_names]
+      else
+        external_author_names = [parse_author(location, options[:external_author_name], options[:external_author_email])]
+      end
+
+
       # convert to an array if not already one
       external_author_names = [external_author_names] if external_author_names.is_a?(ExternalAuthorName)
       if options[:external_coauthor_name] != nil
