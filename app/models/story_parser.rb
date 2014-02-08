@@ -497,11 +497,18 @@ class StoryParser
   end
 
   def parse_author_common(email, name)
-    external_author = ExternalAuthor.find_or_create_by_email(email)
+    external_author = nil
+
+    ExternalAuthor.find_or_create_by_email(email) do |e_a|
+      e_a.save
+      external_author = e_a
+    end
     unless name.blank?
-      external_author_name = ExternalAuthorName.find(:first, :conditions =>
-          {:name => name, :external_author_id => external_author.id}) ||
-          ExternalAuthorName.new(:name => name)
+      external_author_name = nil
+      ExternalAuthorName.find_or_create_by_name_and_external_author_id(:name => name, :external_author_id => external_author.id) do |e_a_n|
+        e_a_n.save
+        external_author_name = e_a_n
+      end
       external_author.external_author_names << external_author_name
       external_author.save
     end
