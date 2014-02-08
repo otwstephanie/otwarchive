@@ -445,7 +445,6 @@ class StoryParser
 
   def set_work_attributes(work,location="",options={})
     raise Error, "Work could not be... well something is broke!" if work.nil?
-    binding.pry
 
     if options[:xml_string]
       url =  String.try_convert(location.work.source_url)
@@ -463,7 +462,9 @@ class StoryParser
       options.merge(options_a)
 
       if options[:importing_for_others]
-        options_b == xml_hash_to_mash_assign_authors(location)
+
+        options_b = xml_hash_to_mash_assign_authors(location)
+        options.merge(options_b)
       end
     else
       work.imported_from_url = location
