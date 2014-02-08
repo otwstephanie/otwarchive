@@ -460,9 +460,9 @@ class StoryParser
       options.merge(options_a)
 
       if options[:importing_for_others]
-        binding.pry
 
         options_b = xml_hash_to_mash_assign_authors(location)
+        options.merge(options_b)
       end
     else
       work.imported_from_url = location
