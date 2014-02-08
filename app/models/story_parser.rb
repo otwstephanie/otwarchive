@@ -391,7 +391,7 @@ class StoryParser
   #return options hash with authors added from xml
   def xml_hash_to_mash_assign_authors(mash)
     options = {}
-
+     binding.pry
     if mash.author.class.to_s == "Array"
     options[:author_name] = m.author[0].name
     options[:author_email] = m.author[0].email
