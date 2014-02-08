@@ -405,7 +405,7 @@ class StoryParser
   end
 
   #set work authors
-  def set_work_authors(work, options = {})
+  def set_work_authors(work,location, options = {})
     # set authors for the works
     pseuds = []
     pseuds << User.current_user.default_pseud unless options[:do_not_set_current_author] || User.current_user.nil?
@@ -484,7 +484,7 @@ class StoryParser
 
     #set default language to english
 
-  work = set_work_authors(work, options)
+  work = set_work_authors(work, work.imported_from_url, options)
 
   work.chapters.each do |chapter|
       if chapter.content.length > ArchiveConfig.CONTENT_MAX
