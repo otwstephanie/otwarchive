@@ -76,7 +76,6 @@ class StoryParser
   failed_urls = []
   errors = []
   url = "nothing"
-  binding.pry
   mashed_works.importworks.importwork.each do |iw|
     begin
 
@@ -391,7 +390,6 @@ class StoryParser
   #return options hash with authors added from xml
   def xml_hash_to_mash_assign_authors(mash)
     options = {}
-     binding.pry
     if mash.author.class.to_s == "Array"
     options[:author_name] = m.author[0].name
     options[:author_email] = m.author[0].email
