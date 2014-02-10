@@ -459,7 +459,6 @@ end
     if options[:xml_string]
       url =  String.try_convert(location.work.source_url)
       work.imported_from_url = url
-      binding.pry
       if location.work.chapter.class.to_s == "Array"
         work.expected_number_of_chapters = location.work.chapter.length
         work = parse_mash_chapters_into_story(work,work.imported_from_url,location,options)
