@@ -91,6 +91,10 @@ end
         work = download_and_parse_story(work_mash, options)
         if work && work.save
           work.chapters.each { |chap| chap.save }
+          if iw.collection
+            work.add_to_collection(Collection.find_by_name(iw.collection.to_s))
+
+          end
           works << work
         else
           failed_urls << url
