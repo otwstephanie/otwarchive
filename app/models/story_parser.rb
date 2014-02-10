@@ -1162,7 +1162,7 @@ end
     if rating
       options[:rating] = convert_rating(rating)
     else
-        options[:rating = ArchiveConfig.RATING_DEFAULT_TAG ]
+        options[:rating] = ArchiveConfig.RATING_DEFAULT_TAG
     end
 
     if fandoms
