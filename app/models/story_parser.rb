@@ -71,7 +71,7 @@ class StoryParser
 
 
 def external_author_from_work_mash(iw_mash)
-  e = ExternalAuthor.create(:email => iw.email.to_s)
+  e = ExternalAuthor.create(:email => iw_mash.author.email.to_s)
   parse_author_common(iw_mash.author.email,iw_mash.author.name)
 end
 
