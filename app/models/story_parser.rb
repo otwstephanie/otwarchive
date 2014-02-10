@@ -73,6 +73,18 @@ def external_author_from_work_mash(iw_mash)
   parse_author_common(iw_mash.author.email,iw_mash.author.name)
 end
 
+  def check_if_own_collection(collection)
+    owner = false
+    User.current_user.pseuds.each do |p|
+      if collection.owners.include?(p)
+        ownere = true
+        return owner
+      else
+        owner = false
+      end
+    end
+  end
+
  def import_many_xml(options={})
   hashed_works = parse_xml(options[:xml_string],options)
   mashed_works = Hashie::Mash.new(hashed_works)
@@ -80,20 +92,28 @@ end
   failed_urls = []
   errors = []
   url = "nothing"
+  #loop through each work
   mashed_works.importworks.importwork.each do |iw|
+    #create the external author
     external_author_from_work_mash(iw)
 
     begin
 
         work_mash = Hashie::Mash.new(Hash[*iw.flatten])
         work = download_and_parse_story(work_mash, options)
+        #if have work object and work save success
         if work && work.save
           work.chapters.each { |chap| chap.save }
+          #Add to Collection if specified
           if iw.collection
-            work.add_to_collection(Collection.find_by_name(iw.collection.to_s))
-
+            #check ownership
+            collection = Collection.find_by_name(iw.collection.to_s)
+            if check_if_own_collection(collection)
+            work.add_to_collection(collection)
           end
+
           works << work
+        #if work save failed
         else
           failed_urls << url
           errors << work.errors.values.join(", ")
