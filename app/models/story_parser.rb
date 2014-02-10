@@ -111,9 +111,9 @@ end
             #check ownership
             collection = Collection.find_by_name(iw.collection.to_s)
             if check_if_own_collection(collection)
-            work.add_to_collection(collection)
-          end
-
+             work.add_to_collection(collection)
+            end
+         end
           works << work
         #if work save failed
         else
