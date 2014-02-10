@@ -1160,39 +1160,47 @@ end
     #ratings to string
     rating = mash.work.tags.rating
 
-    unless fandoms
-      fandoms = "None"
+
+    if rating
+      options[:rating] = convert_rating(rating)
+    else
+        options[:rating = ArchiveConfig.RATING_DEFAULT_TAG ]
     end
 
-    unless categories
+    if fandoms
+      options[:fandom]  = fix_tag_string(clean_tags(fandoms))
+    else
+      options[:fandom] = ArchiveConfig.FANDOM_NO_TAG_NAME
+    end
+
+
+    if categories
+      options[:category]  = fix_tag_string(clean_tags(categories))
+    else
       categories = "Gen"
     end
 
-    unless warnings
-       warnings = "None"
+    if warnings
+      options[:warning] = fix_tag_string(clean_tags(warnings))
+    else
+      options[:warning] = ArchiveConfig.WARNING_DEFAULT_TAG_NAME
     end
 
-    unless characters
-      characters = "None"
+    if characters
+      options[:character]  = fix_tag_string(clean_tags(characters))
     end
 
-  unless relationships
-      relationships = "None"
+    if relationships
+      options[:relationship]  = fix_tag_string(clean_tags(relationships))
     end
 
-    unless freeforms
-      freeforms = "None"
+    if freeforms
+      options[:freeform] = fix_tag_string(clean_tags(freeforms))
     end
-    options[:fandom]  = fix_tag_string(clean_tags(fandoms))
-    options[:category]  = fix_tag_string(clean_tags(categories))
-    options[:warning] = fix_tag_string(clean_tags(warnings))
-    options[:character]  = fix_tag_string(clean_tags(characters))
-    options[:relationship]  = fix_tag_string(clean_tags(relationships))
-    options[:freeform] = fix_tag_string(clean_tags(freeforms))
+
     #work_params[:notes] = clean_storytext(mash.work.note)
     #work_params[:revised_at] = mash.work.date_updated
    # work_params[:completed] = mash.work.completed
-    options[:rating] = convert_rating(mash.work.tags.rating)
 
 
   return options
