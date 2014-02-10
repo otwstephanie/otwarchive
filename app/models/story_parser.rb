@@ -286,21 +286,45 @@ end
     return work
   end
 
-  def parse_mash_chapters_into_story(location,mash,options = {})
-  work = nil
-    mash.work.chapter.each do |c|
-      work_params = work_params_from_mash(mash,work_params)
-      #work params set from mash
 
-      if work.nil?
-        work = Work.new(work_params)
-      else
-        new_chapter = get_chapter_from_work_params(work_params)
-        work.chapters << set_chapter_attributes(work, new_chapter, location, options)
-      end
+  #parse mash of chapter to chapter object
+  def parse_chapter_mash_to_chapter(c)
+    my_chapter = Chapter.new
+
+    #set chapter content
+      my_chapter.content = c.content
+
+    #set chapter position
+      my_chapter.position = c.position
+
+    #set chapter notes
+    if c.notes
+      my_chapter.notes = c.note
     end
-    return set_work_attributes(work, mash, options)
 
+    #set chapter summary
+    if c.summary
+      my_chapter.summary = clean_storytext(c.summary)
+    end
+    #set chapter title
+    if c.title
+      my_chapter.chapter_title = c.title
+    else
+      my_chapter.chapter_title = "Untitled Chapter"
+    end
+
+    return my_chapter
+  end
+
+  #parse mash chapters return work
+  def parse_mash_chapters_into_story(work, location,mash,options = {})
+    mash.work.chapter.each do |c|
+        if c.position != 1
+          new_chapter = parse_chapter_mash_to_chapter(c)
+          work.chapters << set_chapter_attributes(work, new_chapter, location, options)
+        end
+    end
+    return work
   end
 
 
@@ -436,8 +460,9 @@ end
       url =  String.try_convert(location.work.source_url)
       work.imported_from_url = url
       binding.pry
-      if location.chapter.class.to_s == "Array"
+      if location.work.chapter.class.to_s == "Array"
         work.expected_number_of_chapters = location.work.chapter.length
+        work = parse_mash_chapters_into_story(work,work.imported_from_url,location,options)
       else
         work.expected_number_of_chapters = 1
       end
