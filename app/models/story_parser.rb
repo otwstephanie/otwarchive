@@ -319,7 +319,7 @@ end
   #parse mash chapters return work
   def parse_mash_chapters_into_story(work, location,mash,options = {})
     mash.work.chapter.each do |c|
-        if c.position != 1
+        if c.position.to_i != 1
           new_chapter = parse_chapter_mash_to_chapter(c)
           work.chapters << set_chapter_attributes(work, new_chapter, location, options)
         end
