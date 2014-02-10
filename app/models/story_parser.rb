@@ -268,7 +268,7 @@ end
 
     # move any attributes from work to chapter if necessary
     if options[:xml_string]
-
+      #pass story as mash
       return set_work_attributes(Work.new(work_params),story,options)
     else
       return set_work_attributes(Work.new(work_params), location, options)
@@ -290,7 +290,7 @@ end
     my_chapter = Chapter.new
 
     #set chapter content
-      my_chapter.content = c.content
+      my_chapter.content = clean_storytext(c.content)
 
     #set chapter position
       my_chapter.position = c.position
