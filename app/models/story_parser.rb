@@ -98,7 +98,6 @@ end
     external_author_from_work_mash(iw)
 
     begin
-
         work_mash = Hashie::Mash.new(Hash[*iw.flatten])
         work = download_and_parse_story(work_mash, options)
         #if have work object and work save success
@@ -212,7 +211,6 @@ end
   def download_and_parse_story(location, options = {})
     m = nil
 
-
     if options[:xml_string]
       m = location
 
@@ -229,7 +227,7 @@ end
       work = parse_story(story, location, options)
     else
       if source == 'xml'
-        work=parse_story(m,location,options)
+        work = parse_story(m,location,options)
       else
         work = download_and_parse_chaptered_story(source, location, options)
       end
@@ -240,52 +238,6 @@ end
 
   #parse xml
   def parse_xml(xml_string, options = {})
-=begin
-    import_hash = {:IMPORTWORK =>
-                       {:AUTHORS =>
-                            {:AUTHOR => {:EMAIL => "testauthor1@testing.com", :NAME => "testauthor1"}},
-                        :COLLECTIONS => {:COLLECTION => {:NAME => "Test Collection"}},
-                        :WORK =>
-                            {:SOURCE_URL => nil,
-                             :TITLE => "Test Title",
-                             :SUMMARY => "Test Summary",
-                             :NOTE => "Test Work Notes",
-                             :END_NOTE => "Test Work End Notes",
-                             :RESTRICTED => "False",
-                             :DATE_UPDATED => "\"01/01/2014\"",
-                             :DATE_POSTED => "\"07/20/1969\"",
-                             :POSTED => "True",
-                             :ADMIN_HIDDEN => "False",
-                             :TAGS =>
-                                 {:FANDOMS => {:FANDOM => ["Harry Potter", "World of Warcraft"]},
-                                  :CHARACTERS =>
-                                      {:CHARACTER =>
-                                           ["Hermione Granger", "Sylvanas Windrunner", "Illidan Stormrage"]},
-                                  :WARNINGS => {:WARNING => {:NAME => "\"Choose Not To Use Archive Warnings"}},
-                                  :RATING => "General Audiences",
-                                  :FREEFORMS => {:FREEFORM => ["Crossover", "Alternate Universe"]},
-                                  :RELATIONSHIPS => {:RELATIONSHIP => "\"Sylvanas / Hermione\""},
-                                  :CATEGORIES => {:CATEGORY => "\"Gen\""}},
-                             :CHAPTERS =>
-                                 {:CHAPTER =>
-                                      {:DATE_UPDATED => "\"01/01/2014\"",
-                                       :DATE_POSTED => "\"07/20/1969\"",
-                                       :POSITION => "1",
-                                       :NOTE => "Test Chapter 1 Note",
-                                       :TITLE => "Test Chapter 1 Title",
-                                       :SUMMARY => "Test Chapter 1 Summary",
-                                       :CONTENT => "Test Chapter 1 Body",
-                                       :END_NOTE => "Test Chapter 1 End Note",
-                                       :POSTED => "True",
-                                       :ADMIN_HIDDEN => "False",
-                                       :COMMENTS =>
-                                           {:COMMENT =>
-                                                [{:USER => "Guest@someplace.com",
-                                                  :CONTENT => "Test Chapter 1 Comment 1"},
-                                                 {:USER => "Guest@test.net",
-                                                  :CONTENT => "Test Chapter 1 Comment 2"}]}}}}}}
-=end
-
     parser = Nori.new(:convert_tags_to => lambda { |tag| tag.downcase.to_sym })
     import_hash = parser.parse(xml_string)
 
@@ -312,13 +264,12 @@ end
 
   # Parses the text of a story, optionally from a given location.
   def parse_story(story, location, options = {})
-    m = story
     work_params = parse_common(story, location, options)
 
     # move any attributes from work to chapter if necessary
     if options[:xml_string]
 
-      return set_work_attributes(Work.new(work_params),m,options)
+      return set_work_attributes(Work.new(work_params),story,options)
     else
       return set_work_attributes(Work.new(work_params), location, options)
     end
@@ -482,6 +433,7 @@ end
     if options[:xml_string]
       url =  String.try_convert(location.work.source_url)
       work.imported_from_url = url
+      binding.pry
       if location.chapter.class.to_s == "Array"
         work.expected_number_of_chapters = location.work.chapter.length
       else
