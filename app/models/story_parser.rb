@@ -67,6 +67,11 @@ class StoryParser
   STORY_DOWNLOAD_TIMEOUT = 60
   MAX_CHAPTER_COUNT = 200
 
+
+def external_author_from_work_mash(iw_mash)
+  parse_author_common(iw_mash.author.email,iw_mash.author.name)
+end
+
  def import_many_xml(options={})
   hashed_works = parse_xml(options[:xml_string],options)
   mashed_works = Hashie::Mash.new(hashed_works)
@@ -75,7 +80,7 @@ class StoryParser
   errors = []
   url = "nothing"
   mashed_works.importworks.importwork.each do |iw|
-    binding.pry
+    external_author_from_work_mash(iw)
 
     begin
 
