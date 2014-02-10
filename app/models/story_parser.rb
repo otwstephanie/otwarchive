@@ -308,9 +308,9 @@ end
     end
     #set chapter title
     if c.title
-      my_chapter.chapter_title = c.title
+      my_chapter.title = c.title
     else
-      my_chapter.chapter_title = "Untitled Chapter"
+      my_chapter.title = "Untitled Chapter"
     end
 
     return my_chapter
