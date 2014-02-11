@@ -301,7 +301,7 @@ end
     end
 
     if c.title
-      my_chapter.title = c.title
+      my_chapter.title = chapter_mash.title
     else
       my_chapter.title = "Untitled Chapter"
     end
