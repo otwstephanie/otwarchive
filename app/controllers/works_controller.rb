@@ -643,6 +643,7 @@ protected
   # if we are importing for others, we need to send invitations
   def send_external_invites(works)
     if params[:importing_for_others]
+=begin
       @external_authors = works.collect(&:external_authors).flatten.uniq
       if !@external_authors.empty?
         @external_authors.each do |external_author|
@@ -651,6 +652,7 @@ protected
         message = " " + ts("We have notified the author(s) you imported stories for. If any were missed, you can also add co-authors manually.")
         flash[:notice] ? flash[:notice] += message : flash[:notice] = message
       end
+=end
     end
   end
 

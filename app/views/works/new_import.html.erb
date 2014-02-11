@@ -34,7 +34,7 @@
 
   
 <div class="import work post">
-<%= form_tag url_for(:controller => :works, :action => :import) do %>
+<%= form_tag(url_for(:controller => :works, :action => :import), multipart: true) do %>
 <fieldset>
   <legend><%= ts("Works URLs") %></legend>
   <dl>
@@ -75,6 +75,10 @@
     <li>
       <%= text_field_tag_original "external_coauthor_email" %>
       <%= label_tag "external_coauthor_email", ts("Co-Author Email Address") %>
+    </li>
+    <li>
+      <label for="xml_string">File to Upload</label> <%= file_field_tag "xml_string" %>
+
     </li>
   <% end %>
 

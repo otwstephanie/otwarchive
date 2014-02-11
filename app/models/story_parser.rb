@@ -285,26 +285,21 @@ end
   end
 
 
+  #set chapter content, position, notes, summary, title
   #parse mash of chapter to chapter object
-  def parse_chapter_mash_to_chapter(c)
+  def parse_chapter_mash_to_chapter(chapter_mash)
     my_chapter = Chapter.new
+    my_chapter.content = clean_storytext(chapter_mash.content)
+    my_chapter.position = chapter_mash.position
 
-    #set chapter content
-      my_chapter.content = clean_storytext(c.content)
-
-    #set chapter position
-      my_chapter.position = c.position
-
-    #set chapter notes
     if c.notes
-      my_chapter.notes = c.note
+      my_chapter.notes = clean_storytext(chapter_mash.note)
     end
 
-    #set chapter summary
     if c.summary
-      my_chapter.summary = clean_storytext(c.summary)
+      my_chapter.summary = clean_storytext(chapter_mash.summary)
     end
-    #set chapter title
+
     if c.title
       my_chapter.title = c.title
     else
@@ -396,10 +391,10 @@ end
   def xml_hash_to_mash_assign_authors(mash)
     options = {}
     if mash.author.class.to_s == "Array"
-    options[:external_author_name] = m.author[0].name
-    options[:external_author_email] = m.author[0].email
-    options[:external_coauthor_name] = m.authors.author[1].name
-    options[:external_coauthor_email] = m.authors.author[1].email
+    options[:external_author_name] = mash.author[0].name
+    options[:external_author_email] = mash.author[0].email
+    options[:external_coauthor_name] = mash.authors.author[1].name
+    options[:external_coauthor_email] = mash.authors.author[1].email
    else
     options[:external_author_name] = mash.author.name
      options[:external_author_email] = mash.author.email
@@ -1065,15 +1060,6 @@ end
     work_params[:summary] = clean_storytext(m.work.summary)
 
     return work_params
-  end
-
-  def test
-    m = Hashie::Mash.new(hash)
-    part2(m)
-  end
-
-  def part2(m)
-
   end
 
   def fix_tag_string(s)
