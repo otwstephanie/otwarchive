@@ -513,10 +513,14 @@ class WorksController < ApplicationController
   def import
     # check to make sure we have some urls to work with
     @urls = params[:urls].split
-    unless @urls.length > 0
-      flash.now[:error] = ts("Did you want to enter a URL?")
-      render :new_import and return
+
+    unless params[:xml_string]
+      unless @urls.length > 0
+        flash.now[:error] = ts("Did you want to enter a URL?")
+        render :new_import and return
+      end
     end
+
 
     # is this an archivist importing?
     if params[:importing_for_others] && !current_user.archivist
