@@ -292,15 +292,15 @@ end
     my_chapter.content = clean_storytext(chapter_mash.content)
     my_chapter.position = chapter_mash.position
 
-    if c.notes
+    if chapter_mash.notes
       my_chapter.notes = clean_storytext(chapter_mash.note)
     end
 
-    if c.summary
+    if chapter_mash.summary
       my_chapter.summary = clean_storytext(chapter_mash.summary)
     end
 
-    if c.title
+    if chapter_mash.title
       my_chapter.title = chapter_mash.title
     else
       my_chapter.title = "Untitled Chapter"
