@@ -559,20 +559,19 @@ class WorksController < ApplicationController
       :external_author_email => params[:external_author_email],
       :external_coauthor_name => params[:external_coauthor_name],
       :external_coauthor_email => params[:external_coauthor_email],
-      :xml_data => params[:xml_data]
+      :xml_string => params[:xml_string]
     }
 
     # now let's do the import
 
-    if params[:import_multiple] == "works" && @urls.length > 1
+    if params[:import_multiple] == "works" && options[:xml_string]
       import_multiple(@urls, options)
     else
-      if params[:import_multiple] == "works" && options[:xml_string]
+      if params[:import_multiple] == "works" && @urls.length > 1
         import_multiple(@urls, options)
       else # a single work possibly with multiple chapters
         import_single(@urls, options)
       end
-
     end
 
   end
