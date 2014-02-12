@@ -1,7 +1,7 @@
 object @work
 
 # Declare the properties to include
-attributes :title, :summary, :word_count, :id, :updated_at, :created_at
+attributes :title, :summary
 
 
 
