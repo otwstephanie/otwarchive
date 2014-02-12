@@ -3,7 +3,7 @@ source 'http://rubygems.org'
 ruby '1.9.3'
 
 gem 'bundler'
-
+gem 'rabl'
 gem 'rails', '3.2.13'
 
 # Bundle edge Rails instead:
