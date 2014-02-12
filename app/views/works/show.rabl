@@ -9,6 +9,6 @@ child :chapters do
 end
 child :tags do
 
-    attributes :name
+    attributes :name, :type
   end
 end
