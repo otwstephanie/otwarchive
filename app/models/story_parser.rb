@@ -69,17 +69,18 @@ class StoryParser
   STORY_DOWNLOAD_TIMEOUT = 60
   MAX_CHAPTER_COUNT = 200
 
+  #Returns an external author from work mash
+  def external_author_from_work_mash(iw_mash)
+    e = ExternalAuthor.create(:email => iw_mash.author.email.to_s)
+    parse_author_common(iw_mash.author.email,iw_mash.author.name)
+  end
 
-def external_author_from_work_mash(iw_mash)
-  e = ExternalAuthor.create(:email => iw_mash.author.email.to_s)
-  parse_author_common(iw_mash.author.email,iw_mash.author.name)
-end
-
+  #check collection ownership
   def check_if_own_collection(collection)
     owner = false
     User.current_user.pseuds.each do |p|
       if collection.owners.include?(p)
-        ownere = true
+        owner = true
         return owner
       else
         owner = false
@@ -87,28 +88,29 @@ end
     end
   end
 
- def import_many_xml(options={})
-  hashed_works = parse_xml(options[:xml_string],options)
+
+  def import_many_xml(options={})
+  hashed_works = parse_xml_to_hash(options[:xml_string],options)
   mashed_works = Hashie::Mash.new(hashed_works)
   works = []
   failed_urls = []
   errors = []
   url = "nothing"
   #loop through each work
-  mashed_works.importworks.importwork.each do |iw|
+  mashed_works.importworks.importwork.each do |import_work|
     #create the external author
-    external_author_from_work_mash(iw)
+    external_author_from_work_mash(import_work)
 
     begin
-        work_mash = Hashie::Mash.new(Hash[*iw.flatten])
+        work_mash = Hashie::Mash.new(Hash[*import_work.flatten])
         work = download_and_parse_story(work_mash, options)
         #if have work object and work save success
         if work && work.save
-          work.chapters.each { |chap| chap.save }
+          work.chapters.each { |chapter| chapter.save }
           #Add to Collection if specified
-          if iw.collection
+          if import_work.collection
             #check ownership
-            collection = Collection.find_by_name(iw.collection.to_s)
+            collection = Collection.find_by_name(import_work.collection.to_s)
             if check_if_own_collection(collection)
              work.add_to_collection(collection)
             end
@@ -237,12 +239,14 @@ end
     return work
   end
 
-
-  #parse xml
-  def parse_xml(xml_string, options = {})
+  #parse xml string to hash
+  # @param [string] xml_string
+  # @param [hash] options
+  # @return [hash]
+  def parse_xml_to_hash(xml_string, options = {})
     parser = Nori.new(:convert_tags_to => lambda { |tag| tag.downcase.to_sym })
     import_hash = parser.parse(xml_string)
-
+    return import_hash
   end
 
   # download and add a new chapter to the end of a work
@@ -289,6 +293,8 @@ end
 
   #set chapter content, position, notes, summary, title
   #parse mash of chapter to chapter object
+  # @param [Hashie::Mash] chapter_mash
+  # @return [Chapter]
   def parse_chapter_mash_to_chapter(chapter_mash)
     my_chapter = Chapter.new
     my_chapter.content = clean_storytext(chapter_mash.content)
@@ -311,18 +317,25 @@ end
     return my_chapter
   end
 
-  #parse mash chapters return work
+  # parse mash chapters return work
+  # @param [Work] work
+  # @param [String] location
+  # @param [Hashie::Mash] mash
+  # @param [Hash] options
+  # @return [Work]
   def parse_mash_chapters_into_story(work, location,mash,options = {})
-    mash.work.chapter.each do |c|
-        if c.position.to_i != 1
-          new_chapter = parse_chapter_mash_to_chapter(c)
+    mash.work.chapter.each do |chapter|
+        if chapter.position.to_i != 1
+          new_chapter = parse_chapter_mash_to_chapter(chapter)
           work.chapters << set_chapter_attributes(work, new_chapter, location, options)
         end
     end
     return work
   end
 
-
+  # @param [string] location
+  # @param [array] chapter_contents
+  # @param [hash] options
   def parse_chapters_into_story(location, chapter_contents, options = {})
     work = nil
     chapter_contents.each do |content|
@@ -405,6 +418,9 @@ end
   end
 
   #set work authors
+  # @param [Work] work
+  # @param [String] location
+  # @param [Hash] options
   def set_work_authors(work,location, options = {})
     # set authors for the works
     pseuds = []
@@ -448,6 +464,9 @@ end
 
   end
 
+  # @param [Work] work
+  # @param [String or Hashie::Mash] location
+  # @param [Hash] options
   def set_work_attributes(work,location="",options={})
     raise Error, "Work could not be... well something is broke!" if work.nil?
 
@@ -460,7 +479,7 @@ end
       else
         work.expected_number_of_chapters = 1
       end
-      work.restricted = options[:restricted] || options[:importing_for_others] || location.work.restricted || false
+      work.restricted = options[:restricted] || options[:importing_for_others] || location.work.restricted
       work.posted = true if options[:post_without_preview] || location.work.posted || options[:importing_for_others]
 
       #set options from mash
@@ -472,7 +491,7 @@ end
     else
       work.imported_from_url = location
       work.expected_number_of_chapters = work.chapters.length
-      work.restricted = options[:restricted] || options[:importing_for_others] || false
+      work.restricted = options[:restricted] || options[:importing_for_others]
       work.posted = true if options[:post_without_preview]
     end
 
@@ -504,6 +523,8 @@ end
     return work
   end
 
+  # @param [String] email
+  # @param [String] name
   def parse_author_common(email, name)
     external_author = ExternalAuthor.find_by_email(email)
     if external_author
@@ -511,8 +532,6 @@ end
       external_author = ExternalAuthor.new
       external_author.email = email
       external_author.save
-
-
     end
 
     unless name.blank?
@@ -665,113 +684,6 @@ end
     return text
   end
 
-  def download_text(location)
-    story = ""
-    source = get_source_if_known(KNOWN_STORY_LOCATIONS, location)
-    if source.nil?
-      story = download_with_timeout(location)
-    else
-      story = eval("download_from_#{source.downcase}(location)")
-    end
-
-    # clean up any erroneously included string terminator (Issue 785)
-    story = story.gsub("\000", "")
-
-    #story = fix_bad_characters(story)
-    # ^ This eats ALL special characters. I don't think we need it at all
-    # so I'm taking it out. If we want it back, it should be the last
-    # thing we do with the parsed bits after Nokogiri has parsed the content
-    # and worked it's magic with encoding --rebecca
-    return story
-  end
-
-  # grab all the chapters of a story from an efiction-based site
-  def download_chaptered_from_efiction(location)
-    @chapter_contents = []
-    if location.match(/^(.*)\/.*viewstory\.php.*sid=(\d+)($|&)/i)
-      site = $1
-      storyid = $2
-      chapnum = 1
-      Timeout::timeout(STORY_DOWNLOAD_TIMEOUT) {
-        loop do
-          url = "#{site}/viewstory.php?action=printable&sid=#{storyid}&chapter=#{chapnum}"
-          body = download_with_timeout(url)
-          if body.nil? || chapnum > MAX_CHAPTER_COUNT || body.match(/<div class='chaptertitle'> by <\/div>/) || body.match(/Access denied./) || body.match(/Chapter : /)
-            break
-          end
-
-          @chapter_contents << body
-          chapnum = chapnum + 1
-        end
-      }
-    end
-    return @chapter_contents
-  end
-
-
-  # This is the heavy lifter, invoked by all the story and chapter parsers.
-  # It takes a single string containing the raw contents of a story, parses it with
-  # Nokogiri into the @doc object, and then and calls a subparser.
-  #
-  # If the story source can be identified as one of the sources we know how to parse in some custom/
-  # special way, parse_common calls the customized parse_story_from_[source] method.
-  # Otherwise, it falls back to parse_story_from_unknown.
-  #
-  # This produces a hash equivalent to the params hash that is normally created by the standard work
-  # upload form.
-  #
-  # parse_common then calls sanitize_params (which would also be called on the standard work upload
-  # form results) and returns the final sanitized hash.
-  #
-  def parse_common(story, location = nil, options={})
-    work_params = {:title => "UPLOADED WORK", :chapter_attributes => {:content => ""}}
-
-    if options[:xml_string].to_s
-
-      params = parse_story_from_mash(story)
-      work_params.merge!(params)
-    else
-      @doc = Nokogiri::HTML.parse(story, nil, encoding) rescue ""
-      if location && (source = get_source_if_known(KNOWN_STORY_PARSERS, location))
-        params = eval("parse_story_from_#{source.downcase}(story)")
-        work_params.merge!(params)
-      else
-        work_params.merge!(parse_story_from_unknown(story))
-      end
-    end
-
-    return shift_chapter_attributes(sanitize_params(work_params))
-  end
-
-  # our fallback: parse a story from an unknown source, so we have no special
-  # rules.
-  def parse_story_from_unknown(story)
-    work_params = {:chapter_attributes => {}}
-    storyhead = @doc.css("head").inner_html if @doc.css("head")
-    storytext = @doc.css("body").inner_html if @doc.css("body")
-    if storytext.blank?
-      storytext = @doc.css("html").inner_html
-    end
-    if storytext.blank?
-      # just grab everything
-      storytext = story
-    end
-    meta = {}
-    unless storyhead.blank?
-      meta.merge!(scan_text_for_meta(storyhead))
-    end
-    meta.merge!(scan_text_for_meta(storytext))
-    work_params[:title] = @doc.css("title").inner_html
-    work_params[:chapter_attributes][:content] = clean_storytext(storytext)
-    work_params = work_params.merge!(meta)
-
-    return work_params
-  end
-
-  # Parses a story from livejournal or a livejournal equivalent (eg, dreamwidth, insanejournal)
-  # Assumes that we have downloaded the story from one of those equivalents (ie, we've downloaded
-  # it in format=light which is a stripped-down plaintext version.)
-  #
   def parse_story_from_lj(story)
     work_params = {:chapter_attributes => {}}
 
@@ -1047,6 +959,115 @@ end
     return work_params
   end
 
+  #General Parsers
+
+  def download_text(location)
+    story = ""
+    source = get_source_if_known(KNOWN_STORY_LOCATIONS, location)
+    if source.nil?
+      story = download_with_timeout(location)
+    else
+      story = eval("download_from_#{source.downcase}(location)")
+    end
+
+    # clean up any erroneously included string terminator (Issue 785)
+    story = story.gsub("\000", "")
+
+    #story = fix_bad_characters(story)
+    # ^ This eats ALL special characters. I don't think we need it at all
+    # so I'm taking it out. If we want it back, it should be the last
+    # thing we do with the parsed bits after Nokogiri has parsed the content
+    # and worked it's magic with encoding --rebecca
+    return story
+  end
+
+  # grab all the chapters of a story from an efiction-based site
+  def download_chaptered_from_efiction(location)
+    @chapter_contents = []
+    if location.match(/^(.*)\/.*viewstory\.php.*sid=(\d+)($|&)/i)
+      site = $1
+      storyid = $2
+      chapnum = 1
+      Timeout::timeout(STORY_DOWNLOAD_TIMEOUT) {
+        loop do
+          url = "#{site}/viewstory.php?action=printable&sid=#{storyid}&chapter=#{chapnum}"
+          body = download_with_timeout(url)
+          if body.nil? || chapnum > MAX_CHAPTER_COUNT || body.match(/<div class='chaptertitle'> by <\/div>/) || body.match(/Access denied./) || body.match(/Chapter : /)
+            break
+          end
+
+          @chapter_contents << body
+          chapnum = chapnum + 1
+        end
+      }
+    end
+    return @chapter_contents
+  end
+
+
+  # This is the heavy lifter, invoked by all the story and chapter parsers.
+  # It takes a single string containing the raw contents of a story, parses it with
+  # Nokogiri into the @doc object, and then and calls a subparser.
+  #
+  # If the story source can be identified as one of the sources we know how to parse in some custom/
+  # special way, parse_common calls the customized parse_story_from_[source] method.
+  # Otherwise, it falls back to parse_story_from_unknown.
+  #
+  # This produces a hash equivalent to the params hash that is normally created by the standard work
+  # upload form.
+  #
+  # parse_common then calls sanitize_params (which would also be called on the standard work upload
+  # form results) and returns the final sanitized hash.
+  #
+  def parse_common(story, location = nil, options={})
+    work_params = {:title => "UPLOADED WORK", :chapter_attributes => {:content => ""}}
+    if options[:xml_string].to_s
+      params = parse_story_from_mash(story)
+      work_params.merge!(params)
+    else
+      @doc = Nokogiri::HTML.parse(story, nil, encoding) rescue ""
+      if location && (source = get_source_if_known(KNOWN_STORY_PARSERS, location))
+        params = eval("parse_story_from_#{source.downcase}(story)")
+        work_params.merge!(params)
+      else
+        work_params.merge!(parse_story_from_unknown(story))
+      end
+    end
+
+    return shift_chapter_attributes(sanitize_params(work_params))
+  end
+
+  # our fallback: parse a story from an unknown source, so we have no special
+  # rules.
+  def parse_story_from_unknown(story)
+    work_params = {:chapter_attributes => {}}
+    storyhead = @doc.css("head").inner_html if @doc.css("head")
+    storytext = @doc.css("body").inner_html if @doc.css("body")
+    if storytext.blank?
+      storytext = @doc.css("html").inner_html
+    end
+    if storytext.blank?
+      # just grab everything
+      storytext = story
+    end
+    meta = {}
+    unless storyhead.blank?
+      meta.merge!(scan_text_for_meta(storyhead))
+    end
+    meta.merge!(scan_text_for_meta(storytext))
+    work_params[:title] = @doc.css("title").inner_html
+    work_params[:chapter_attributes][:content] = clean_storytext(storytext)
+    work_params = work_params.merge!(meta)
+
+    return work_params
+  end
+
+  # Parses a story from livejournal or a livejournal equivalent (eg, dreamwidth, insanejournal)
+  # Assumes that we have downloaded the story from one of those equivalents (ie, we've downloaded
+  # it in format=light which is a stripped-down plaintext version.)
+  #
+
+  # @param [Hashie::Mash] mash
   def parse_story_from_mash(mash)
     m = mash
     work_params = {:chapter_attributes => {}}
