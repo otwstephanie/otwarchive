@@ -339,7 +339,7 @@ class StoryParser
   def parse_chapters_into_story(location, chapter_contents, options = {})
     work = nil
     chapter_contents.each do |content|
-      work_params = parse_common(content, location, options[:encoding])
+      work_params = parse_common(content, location, options)
       if work.nil?
         # create the new work
         work = Work.new(work_params)
