@@ -264,13 +264,20 @@ Otwarchive::Application.routes.draw do
   end
 
 
-  #### WORKS ####
-
-  resources :works do
+  #### IMPORTS ###
+  resources :imports do
     collection do
       post :import
       post :import_multiple
       get :import_multiple
+    end
+  end
+
+  #### WORKS ####
+
+  resources :works do
+    collection do
+
       get :search
     end
     member do
