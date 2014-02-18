@@ -60,7 +60,7 @@ end
 
 
     }
-    if params[xml_data]
+    if params[:xml_data]
       options[:xml_string] = params[:xml_data].read
     end
 
