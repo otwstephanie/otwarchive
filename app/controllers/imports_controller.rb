@@ -167,11 +167,13 @@ end
 
   #POST /imports/import_multiple
   def import_multiple
+=begin
     @xml_data = params[:xml_data]
     unless @xml_data
       flash.now[:error] = ts("No data found")
       render :new_multi_import and return
     end
+=end
     # is this an archivist importing?
     if params[:importing_for_others] && !current_user.archivist
       flash.now[:error] = ts("You may not import stories by other users unless you are an approved archivist.")
