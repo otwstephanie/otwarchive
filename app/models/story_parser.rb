@@ -73,6 +73,12 @@ class StoryParser
   # (in characters)
   DUPLICATE_CHAPTER_LENGTH = 10000
 
+  #Returns an external author from work mash
+  def external_author_from_work_mash(iw_mash)
+    e = ExternalAuthor.create(:email => iw_mash.author.email.to_s)
+    parse_author_common(iw_mash.author.email,iw_mash.author.name)
+  end
+
   #check collection ownership
   def check_if_own_collection(collection)
     owner = false
