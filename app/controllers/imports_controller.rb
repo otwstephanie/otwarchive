@@ -56,8 +56,13 @@ end
         :external_author_email => params[:external_author_email],
         :external_coauthor_name => params[:external_coauthor_name],
         :external_coauthor_email => params[:external_coauthor_email],
-        :xml_string => params[:xml_string].read
+        :xml_string => nil
+
+
     }
+    if params[xml_data]
+      options[:xml_string] = params[:xml_data].read
+    end
 
     # now let's do the import
 
