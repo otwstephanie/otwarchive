@@ -10,7 +10,7 @@ def new
   end
 end
 
-# POST /new/import
+# POST /import/import
   def import
     # check to make sure we have some urls to work with
     @urls = params[:urls].split
@@ -159,7 +159,7 @@ end
     end
   end
 
-  #POST /works/import_multiple
+  #POST /imports/import_multiple
   def import_multiple
     @xml_data = params[:xml_data]
     unless @xml_data
