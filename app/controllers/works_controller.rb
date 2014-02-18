@@ -509,8 +509,8 @@ class WorksController < ApplicationController
     end
   end
 
-  #POST /works/multipleimport
-  def multiple_import
+  #POST /works/import_multiple
+  def import_multiple
     @xml_data = params[:xml_data]
     unless @xml_data
       flash.now[:error] = ts("No data found")
