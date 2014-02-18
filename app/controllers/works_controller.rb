@@ -509,28 +509,6 @@ class WorksController < ApplicationController
     end
   end
 
-  #POST /works/import_multiple
-  def import_multiple
-    @xml_data = params[:xml_data]
-    unless @xml_data
-      flash.now[:error] = ts("No data found")
-      render :new_multi_import and return
-    end
-    # is this an archivist importing?
-    if params[:importing_for_others] && !current_user.archivist
-      flash.now[:error] = ts("You may not import stories by other users unless you are an approved archivist.")
-      render :new_import and return
-    end
-    options = {
-        :pseuds => pseuds_to_apply,
-        :importing_for_others => params[:importing_for_others],
-        :restricted => params[:restricted],
-        :encoding => params[:encoding],
-        :xml_string => params[:xml_data].read
-    }
-
-    import_multiple(nil, options)
-  end
 
 
 

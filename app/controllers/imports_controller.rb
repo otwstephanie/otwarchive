@@ -1,11 +1,11 @@
 class ImportsController < ApplicationController
 def new
   if params[:single]
-    @page_subtitle = ts("Import")
+    @page_subtitle = ts("Import Work")
     render :new_import and return
   end
   if params[:multiple]
-    @page_subtitle = ts("Multiple Import")
+    @page_subtitle = ts("Import Multiple Works")
     render :new_import_multiple and return
   end
 end
@@ -62,10 +62,10 @@ end
     # now let's do the import
 
     if params[:import_multiple] == "works" && options[:xml_string]
-      import_multiple(@urls, options)
+      import_multiple_works(@urls, options)
     else
       if params[:import_multiple] == "works" && @urls.length > 1
-        import_multiple(@urls, options)
+        import_multiple_works(@urls, options)
       else # a single work possibly with multiple chapters
         import_single(@urls, options)
       end
@@ -112,7 +112,7 @@ end
   end
 
   # import multiple works
-  def import_multiple(urls, options)
+  def import_multiple_works(urls, options)
     # try a multiple import
     storyparser = StoryParser.new
     if options[:xml_string]
@@ -157,5 +157,29 @@ end
         flash[:notice] ? flash[:notice] += message : flash[:notice] = message
       end
     end
+  end
+
+  #POST /works/import_multiple
+  def import_multiple
+    @xml_data = params[:xml_data]
+    unless @xml_data
+      flash.now[:error] = ts("No data found")
+      render :new_multi_import and return
     end
+    # is this an archivist importing?
+    if params[:importing_for_others] && !current_user.archivist
+      flash.now[:error] = ts("You may not import stories by other users unless you are an approved archivist.")
+      render :new_import and return
+    end
+    options = {
+        :pseuds => pseuds_to_apply,
+        :importing_for_others => params[:importing_for_others],
+        :restricted => params[:restricted],
+        :encoding => params[:encoding],
+        :xml_string => params[:xml_data].read
+    }
+
+    import_multiple_works(nil, options)
+  end
+
 end
