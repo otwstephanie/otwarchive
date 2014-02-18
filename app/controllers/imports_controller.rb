@@ -119,7 +119,7 @@ end
   def import_multiple_works(urls, options)
     # try a multiple import
     storyparser = StoryParser.new
-    if options[:xml_string]
+    if options[:xml_string].to_s.length > 100
       @works, failed_urls, errors = storyparser.import_many_xml(options)
     else
       @works, failed_urls, errors = storyparser.import_from_urls(urls, options)
