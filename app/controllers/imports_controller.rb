@@ -1,4 +1,4 @@
-class ImportsController
+class ImportsController < ApplicationController
 def new
   if params[:single]
     @page_subtitle = ts("Import")
