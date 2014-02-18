@@ -6,6 +6,8 @@ class StoryParser
   require 'nokogiri'
   require 'mechanize'
   require 'open-uri'
+  require 'nori'
+  include Hashie
   include HtmlCleaner
 
   META_PATTERNS = {:title => 'Title',
