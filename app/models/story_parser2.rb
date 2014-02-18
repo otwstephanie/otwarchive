@@ -69,9 +69,11 @@ class StoryParser
   STORY_DOWNLOAD_TIMEOUT = 60
   MAX_CHAPTER_COUNT = 200
 
-  # To check for duplicate chapters, take a slice this long out of the story
-  # (in characters)
-  DUPLICATE_CHAPTER_LENGTH = 10000
+  #Returns an external author from work mash
+  def external_author_from_work_mash(iw_mash)
+    e = ExternalAuthor.create(:email => iw_mash.author.email.to_s)
+    parse_author_common(iw_mash.author.email,iw_mash.author.name)
+  end
 
   #check collection ownership
   def check_if_own_collection(collection)
@@ -211,28 +213,29 @@ class StoryParser
   # to get a nice and consistent post format), it will pre-process the url
   # according to the rules for that site.
   def download_and_parse_story(location, options = {})
-    mash = nil
-    if options[:source] == "file"
-      mash = location
-      location = mash.work.source_url
+    m = nil
+
+    if options[:xml_string].to_s.length > 50
+      m = location
+
+      location = m.work.source_url
+      source = 'xml'
     else
       source = get_source_if_known(CHAPTERED_STORY_LOCATIONS, location)
     end
-
     check_for_previous_import(location)
     work = nil
-    if options[:source] == "file"
-      work = parse_story(mash,location,options)
+
+    if source.nil?
+      story = download_text(location)
+      work = parse_story(story, location, options)
     else
-      if source
-        work = download_and_parse_chaptered_story(source, location, options)
+      if source == 'xml'
+        work = parse_story(m,location,options)
       else
-        story = download_text(location)
-        work = parse_story(story, location, options)
+        work = download_and_parse_chaptered_story(source, location, options)
       end
     end
-
-
     return work
   end
 
@@ -466,25 +469,24 @@ class StoryParser
   # @param [Hash] options
   def set_work_attributes(work,location="",options={})
     raise Error, "Work could not be... well something is broke!" if work.nil?
-    mash = nil
-    if options[:source] == "file"
-      mash = location
-      url =  String.try_convert(mash.work.source_url)
+
+    if options[:xml_string]
+      url =  String.try_convert(location.work.source_url)
       work.imported_from_url = url
-      if mash.work.chapter.class.to_s == "Array"
-        work.expected_number_of_chapters = mash.work.chapter.length
-        work = parse_mash_chapters_into_story(work,work.imported_from_url,mash,options)
+      if location.work.chapter.class.to_s == "Array"
+        work.expected_number_of_chapters = location.work.chapter.length
+        work = parse_mash_chapters_into_story(work,work.imported_from_url,location,options)
       else
         work.expected_number_of_chapters = 1
       end
-      work.restricted = options[:restricted] || options[:importing_for_others] || mash.work.restricted
+      work.restricted = options[:restricted] || options[:importing_for_others] || location.work.restricted
       work.posted = true if options[:post_without_preview] || location.work.posted || options[:importing_for_others]
 
       #set options from mash
-      options = options.merge(options_from_mash(mash))
+      options = options.merge(options_from_mash(location))
 
       if options[:importing_for_others]
-        options = options.merge(xml_hash_to_mash_assign_authors(mash))
+        options = options.merge(xml_hash_to_mash_assign_authors(location))
       end
     else
       work.imported_from_url = location

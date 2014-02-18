@@ -56,8 +56,8 @@ end
         :external_author_email => params[:external_author_email],
         :external_coauthor_name => params[:external_coauthor_name],
         :external_coauthor_email => params[:external_coauthor_email],
-        :xml_string => ""
-
+        :xml_string => "",
+        :source => "web"
 
     }
 
@@ -184,6 +184,7 @@ end
         :importing_for_others => params[:importing_for_others],
         :restricted => params[:restricted],
         :encoding => params[:encoding],
+        :source => "file",
         :xml_string => params[:xml_data].read
     }
 
