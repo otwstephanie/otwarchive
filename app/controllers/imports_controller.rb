@@ -6,7 +6,7 @@ def new
   end
   if params[:multiple]
     @page_subtitle = ts("Multiple Import")
-    render :new__multiple_import and return
+    render :new_import_multiple and return
   end
 end
 
