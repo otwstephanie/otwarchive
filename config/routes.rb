@@ -269,6 +269,7 @@ Otwarchive::Application.routes.draw do
   resources :works do
     collection do
       post :import
+      post :multiple_import
       get :search
     end
     member do
