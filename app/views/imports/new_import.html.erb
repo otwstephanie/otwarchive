@@ -31,7 +31,7 @@
 
 <!-- This partial renders a form for importing a work from an existing URL -->
   
-<%= form_tag url_for(:controller => :works, :action => :import), :class => "import work post" do %>
+<%= form_tag url_for(:controller => :imports, :action => :import), :class => "import work post" do %>
   <fieldset>
     <legend><%= ts("Works URLs") %></legend>
     <dl>
