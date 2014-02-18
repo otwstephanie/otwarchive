@@ -10,8 +10,8 @@
 
 
 <!-- This partial renders a form for importing a work from an existing URL -->
-  
-<%= form_tag url_for(:controller => :imports, :action => :import_multiple), :class => "import work post" do %>
+<div class="import work post">
+  <%= form_tag(url_for(:controller => :works, :action => :import_multiple), multipart: true) do %>
   <fieldset>
     <dl>
       <dt><%= label_tag "encoding", ts("Set custom encoding") %> <%= link_to_help "encoding-help" %></dt>
