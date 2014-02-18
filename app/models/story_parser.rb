@@ -215,7 +215,7 @@ class StoryParser
   def download_and_parse_story(location, options = {})
     m = nil
 
-    if options[:xml_string]
+    if options[:xml_string].to_s.length > 50
       m = location
 
       location = m.work.source_url
