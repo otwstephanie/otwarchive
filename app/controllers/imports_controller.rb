@@ -60,9 +60,8 @@ end
 
 
     }
-    if params[:xml_data]
-      options[:xml_string] = params[:xml_data].read
-    end
+
+
 
     # now let's do the import
 

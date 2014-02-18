@@ -44,7 +44,7 @@ gem 'paperclip'
 gem 'hashie'
 # for looking up image dimensions quickly
 gem 'fastimage'
-
+gem 'nori'
 gem 'authlogic'
 
 # A highly updated version of the authorization plugin
