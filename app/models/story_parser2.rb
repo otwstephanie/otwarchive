@@ -1,7 +1,7 @@
 # Parse stories from other websites and uploaded files, looking for metadata to harvest
 # and put into the archive.
 #
-class StoryParser
+class StoryParser2
   require 'timeout'
   require 'nokogiri'
   require 'mechanize'
