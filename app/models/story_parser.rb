@@ -1021,7 +1021,7 @@ class StoryParser
   #
   def parse_common(story, location = nil, options={})
     work_params = {:title => "UPLOADED WORK", :chapter_attributes => {:content => ""}}
-    if options[:xml_string] != nil
+    if options[:xml_string].to_s.length > 50
       params = parse_story_from_mash(story)
       work_params.merge!(params)
     else
