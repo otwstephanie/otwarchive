@@ -151,6 +151,7 @@ end
 
   # if we are importing for others, we need to send invitations
   def send_external_invites(works)
+=begin
     if params[:importing_for_others]
       @external_authors = works.collect(&:external_authors).flatten.uniq
       if !@external_authors.empty?
@@ -161,6 +162,7 @@ end
         flash[:notice] ? flash[:notice] += message : flash[:notice] = message
       end
     end
+=end
   end
 
   #POST /imports/import_multiple
