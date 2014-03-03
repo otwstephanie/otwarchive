@@ -15,7 +15,7 @@ class ApplicationController < ActionController::Base
   helper_method :recipients
   def recipients
     curr_p = current_user.default_pseud
-
+    Pseud.all.compact
   end
   # Title helpers
   helper_method :process_title
