@@ -14,7 +14,7 @@ class ApplicationController < ActionController::Base
   helper_method :logged_in_as_admin?
   helper_method :recipients
   def recipients
-    curr_p = Users.current_user.default_pseud
+    curr_p = current_user.default_pseud
 
   end
   # Title helpers
