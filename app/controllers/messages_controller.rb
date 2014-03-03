@@ -44,7 +44,7 @@ class MessagesController < ApplicationController
     @message = Message.find(params[:id])
     if params[:message][:body]
       @message.reply! message_params.merge(:pseud=> User.current_user.default_pseud)
-      set_flash_message :notice, :replied
+      flash[:notice] = :replied
       redirect_to index_messages_path
     else
       set_flash_message :alert, :invalid
