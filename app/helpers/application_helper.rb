@@ -3,6 +3,9 @@
 module ApplicationHelper
   
   include HtmlCleaner
+  def message_person(mailbox_name, message)
+    mailbox_name == 'inbox' ? message.sender : message.recipient_list.join(', ')
+  end
 
   # Generates class names for the main div in the application layout
   def classes_for_main

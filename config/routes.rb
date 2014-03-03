@@ -22,7 +22,17 @@ Otwarchive::Application.routes.draw do
     end
   end
   
-  
+  ###messages
+
+  resources :messages do
+    collection do
+      get 'compose', :to=>'messages#new', :as=>:compose
+      get 'index', :to=> 'messages#index', :as=> :index
+      get 'sent', :to=> 'messages#sent', :as=> :sent
+      post 'reply', :to=> 'messages#reply', :as=> :reply
+      post 'trash', :to=> 'messages#trash', :as=> :trash
+    end
+  end
   #### OPEN DOORS ####
   namespace :opendoors do
     resources :tools, :only => [:index] do

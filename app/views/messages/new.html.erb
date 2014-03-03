@@ -1,0 +1,13 @@
+<%= render "shared/messages_menu" %>
+<% if @message.errors.present? %>
+	<label><%= @message.errors.full_messages %></label>
+<% end %>
+<%= simple_form_for(@message) do |f| %>
+	<fieldset>
+	<%= f.input :recipient_ids, collection: recipients, :input_html=> {class: 'recipients', multiple: true}, label: 'Sent To' %>
+	<%= f.input :subject,:label=> false,:placeholder=>'enter title ...' %>
+	<%= f.input :body, :label=> false, :required=> false, :placeholder=> 'Hi, how are you? ...',:input_html => {:rows=>5,:style=>'width:100%'} %>
+	<%= f.input :draft, :as=>:boolean , :label=>'Save as Draft?' %>
+	<%= f.button :submit,'Send Message',:class=>"btn btn-primary" %>
+	</fieldset>
+<% end %>

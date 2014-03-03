@@ -19,7 +19,8 @@ gem 'redis', ">=3.0"
 gem 'redis-namespace'
 
 # Here are all our application-specific gems
-
+gem 'haml','~>4.0.4'
+gem 'simple_form','~>2.1.0'
 gem 'will_paginate', '>=3.0.2'
 gem 'acts_as_list'
 gem 'akismetor'

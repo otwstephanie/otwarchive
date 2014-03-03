@@ -71,6 +71,8 @@ class Pseud < ActiveRecord::Base
 
   after_update :check_default_pseud
 
+  has_many :messages, class_name: 'Message', foreign_key: 'pseud_id'
+
   scope :on_works, lambda {|owned_works|
     select("DISTINCT pseuds.*").
     joins(:works).
@@ -151,6 +153,13 @@ class Pseud < ActiveRecord::Base
   # Gets the number of recs by this user
   def visible_recs_count
     self.recs.is_public.size
+  end
+
+  def message_title
+    "#{prefix} <#{email}>"
+  end
+  def mailbox
+    Mailbox.new(self)
   end
 
   scope :public_work_count_for, lambda {|pseud_ids|
