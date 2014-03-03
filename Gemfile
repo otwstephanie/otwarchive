@@ -24,7 +24,12 @@ gem 'simple_form','~>2.1.0'
 gem 'will_paginate', '>=3.0.2'
 gem 'acts_as_list'
 gem 'akismetor'
-
+gem 'rsolr','~>1.0.9'
+gem 'rsolr-ext','~>1.0.3'
+gem 'hash_struct','~>0.3'
+gem 'ancestry','~>2.0.0'
+gem 'hirb','~>0.7.1'
+gem 'interactive_editor','~>0.0.10'
 gem 'htmlentities'
 gem 'whenever', '~>0.6.2', :require => false
 gem 'nokogiri', '>=1.4.2'
