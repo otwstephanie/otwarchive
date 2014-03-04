@@ -47,7 +47,7 @@ class MessagesController < ApplicationController
       flash[:notice] = :replied
       redirect_to index_messages_path
     else
-      set_flash_message :alert, :invalid
+      flash[:error] =  :invalid
       redirect_to :back
     end
   end
@@ -55,19 +55,19 @@ class MessagesController < ApplicationController
   def trash
     @message = Message.find(params[:id])
     @message.trash!
-    set_flash_message :notice, :trashed
+    flash[:notice] = :trashed
     redirect_to index_messages_path
   end
 
   def destroy
     message.delete!
-    set_flash_message :notice, :deleted
+    flash[:notice] = :deleted
     redirect_to mailbox_path(:inbox)
   end
 
   def empty_trash
     Mailbox.new(User.current_user.default_pseud).empty_trash!
-    set_flash_message :notice, :trash_emptied
+    flash[:notice] = :trash_emptied
     redirect_to mailbox_path(:inbox)
   end
 
@@ -83,7 +83,7 @@ class MessagesController < ApplicationController
 
   def send_message
     message.send!
-    notice = message.sent? ? set_flash_message(:notice, :sent) : set_flash_message(:notice, :saved)
+    notice = message.sent? ? flash[:notice] = :sent : flash[:notice] =  :saved
     redirect_to :back, notice: notice
   end
 
@@ -94,7 +94,7 @@ class MessagesController < ApplicationController
 
   def can_view_message
     unless mine?
-      set_flash_message :notice, :unauthorised
+      flash[:notice] = :unauthorised
       redirect_to mailbox_path(:inbox)
     end
   end
