@@ -23,7 +23,7 @@ class MessageSender
   def deliver!
     if recipients.any? && message.unsent?
       set_as_sent
-      recipients.each { |user| deliver_to user }
+      recipients.each { |pseud| deliver_to pseud }
     end
   end
 
