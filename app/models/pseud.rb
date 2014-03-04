@@ -161,7 +161,9 @@ class Pseud < ActiveRecord::Base
   def mailbox
     Mailbox.new(self)
   end
-
+  def full_name
+    return "#{self.user_id} => #{self.name}"
+  end
   scope :public_work_count_for, lambda {|pseud_ids|
     {
       :select => "pseuds.id, count(pseuds.id) AS work_count",
