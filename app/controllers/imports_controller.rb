@@ -1,4 +1,5 @@
   class ImportsController < ApplicationController
+    require 'JSON'
     before_filter :users_only
     before_filter :check_user_status
 
@@ -70,6 +71,8 @@
           :source => "web"
 
       }
+
+
      # now let's do the import
       if params[:import_multiple] == "works" && @urls.length > 1
         import_multiple_works(@urls, options)

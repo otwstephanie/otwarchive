@@ -7,7 +7,7 @@ class CollectionsController < ApplicationController
   cache_sweeper :collection_sweeper
   cache_sweeper :static_sweeper
 
-  def load_collection_from_id
+  def load_collection_from_id                                          n
     @collection = Collection.find_by_name(params[:id])
     unless @collection
       flash[:error] = ts("Sorry, we couldn't find the collection you were looking for.")
