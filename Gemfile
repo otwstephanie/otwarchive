@@ -17,6 +17,8 @@ gem 'mysql2'
 # We are currently running Redis 2.6.4 (12/6/2012)
 gem 'redis', ">=3.0"
 gem 'redis-namespace'
+gem 'messaging', git: 'git://github.com/frodefi/rails-messaging.git'
+gem 'mailboxer', git: 'git://github.com/ging/mailboxer.git'
 
 # Here are all our application-specific gems
 gem 'haml','~>4.0.4'
@@ -49,8 +51,8 @@ gem 'paperclip'
 # for looking up image dimensions quickly
 gem 'fastimage'
 
-gem 'authlogic'
-
+#gem 'authlogic'
+gem "devise"
 # A highly updated version of the authorization plugin
 gem 'permit_yo'
 
