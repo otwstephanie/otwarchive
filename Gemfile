@@ -39,7 +39,8 @@ gem 'tire'
 gem 'elasticsearch'
 gem 'aws-sdk'
 gem 'css_parser'
-
+gem 'nori'
+gem 'hashie'
 gem 'cocaine'
 gem 'paperclip'
 

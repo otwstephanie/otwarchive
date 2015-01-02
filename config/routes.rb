@@ -262,6 +262,13 @@ Otwarchive::Application.routes.draw do
     end
   end
 
+  #### IMPORTS ###
+  resources :imports do
+    collection do
+      post :import
+      post :import_multiple
+    end
+  end
 
   #### WORKS ####
 

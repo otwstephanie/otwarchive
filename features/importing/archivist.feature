@@ -25,13 +25,23 @@ Feature: Archivist bulk imports
   
   Given I have an archivist "alice_ttlg"
     When I am logged in as "alice_ttlg"
-      And I import the work "http://rebecca2525.livejournal.com/3562.html"
+      And I import the work "http://yuletidetreasure.org/archive/84/thatshall.html"
     Then I should see "We have notified the author(s) you imported works for"
-      And I should see "Importing Test"
+      And I should see "That Shall Achieve The Sword"
     When the system processes jobs
-    Then 1 email should be delivered to "rebecca2525@livejournal.com"
-      And the email should contain invitation warnings from "alice ttlg" for work "Importing Test" in fandom "Lewis"
-      
+    Then 1 email should be delivered to "shalott@intimations.org"
+      And the email should contain invitation warnings from "alice ttlg" for work "That Shall Achieve The Sword" in fandom "Merlin UK"
+
+  Scenario: Import multiple works from file as an archivist
+
+    Given I have an archivist "elynross"
+    When I am logged in as "elynross"
+    And I import the works from file "test8.xml"
+    Then I should see multi-story import messages
+    And I should see "Teaching Lessons"
+    And I should see "Strategic Planning"
+    And I should see "We have notified the author(s) you imported works for. If any were missed, you can also add co-authors manually."
+
   Scenario: Import multiple works as an archivist
   
   Given I have an archivist "elynross"
@@ -99,17 +109,3 @@ Feature: Archivist bulk imports
 
   Scenario: Importing straight into a collection
   # TODO
-  
-  Scenario: Should not be able to import for others unless the box is checked
-  
-    Given I have an archivist "elynross"
-    When I am logged in as "elynross"
-      And I go to the import page
-      And I fill in "URLs*" with "http://cesy.dreamwidth.org/154770.html"
-      And I fill in "Author Name*" with "cesy"
-      And I fill in "Author Email Address*" with "cesy@dreamwidth.org"
-    When I press "Import"
-    Then I should see /You have entered an external author name or e-mail address but did not select "Import for others."/
-    When I check the 1st checkbox with id matching "importing_for_others"
-    And I press "Import"
-    Then I should see "We have notified the author(s) you imported works for. If any were missed, you can also add co-authors manually."
