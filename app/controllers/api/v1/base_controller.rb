@@ -5,7 +5,7 @@ module Api
   module V1
     class BaseController < ApplicationController
       before_filter :restrict_access
-      before_action :set_resource, only: [:destroy, :show, :update]
+      before_action :set_resource, only: [:destroy, :show, :update, :create]
       respond_to :json
 
       private
